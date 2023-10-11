@@ -1,1 +1,1 @@
-# gophkeeper
+# Менеджер паролей GophKeeper
