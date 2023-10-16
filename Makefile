@@ -9,14 +9,20 @@ all: ;
 build:
 	go build -C ./cmd/client -o $(shell pwd)/cmd/client/gophermart
 
+# BUILD-AGENT
+.PHONY: build-agent
+build:
+	go build -C ./cmd/agent -o $(shell pwd)/cmd/agent/gophermart
+
 # BUILD-SERVER
 .PHONY: build-server
 build:
-	go build -C ./cmd/server -o $(shell pwd)/cmd/client/gophermart
+	go build -C ./cmd/server -o $(shell pwd)/cmd/server/gophermart
 
 # BUILD
 .PHONY: build
-build: 
+build:
+	build-agent
 	build-client
 	build-server
 

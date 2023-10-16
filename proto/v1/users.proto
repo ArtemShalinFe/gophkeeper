@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package gophkeeper;
+
+option go_package = "github.com/ArtemShalinFe/gophkeeper/internal";
+
+message User {
+  string id = 1;
+}
+
+message RegisterRequest {
+  string login = 1;
+  string pwd = 2;
+}
+
+message RegisterResponse {
+  User user = 1;
+  string jwt = 2;
+  string error = 3;
+}
+
+message LoginRequest {
+  string login = 1;
+  string pwd = 2;
+}
+
+message LoginResponse {
+  User user = 1;
+  string jwt = 2;
+  string error = 3;
+}
+
+service Users {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+}

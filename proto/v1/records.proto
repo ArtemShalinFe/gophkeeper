@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package gophkeeper;
+
+option go_package = "github.com/ArtemShalinFe/gophkeeper/internal";
+
+message LastUpdateBorder {
+  google.protobuf.Timestamp timestamp = 1;
+}
+
+message Auth {
+  string login = 1;
+  string pwd = 2;
+  repeated MetaInfo meta = 3;
+}
+
+message Text {
+  string data = 1;
+  repeated MetaInfo meta = 2;
+}
+
+message Binary {
+  bytes data = 1;
+  repeated MetaInfo meta = 2;
+}
+
+message Card {
+  string number = 1;
+  google.protobuf.Timestamp term = 2;
+  string owner = 3;
+  repeated MetaInfo meta = 4;
+}
+
+message Record {
+  string id = 1; 
+  oneof data {
+    Auth auth = 2;
+    Text text = 3;
+    Binary binary = 4;
+    Card card = 5;
+  }
+}
+
+message AddRecordRequest {
+  Record record = 1;
+}
+  
+message AddRecordResponse {
+  string id = 1; 
+  LastUpdateBorder border = 2;
+  string error = 3;
+}
+
+message UpdateRecordRequest {
+  Record record = 1;
+}
+    
+message UpdateRecordResponse {
+  string id = 1; 
+  LastUpdateBorder border = 2;
+  string error = 3;
+}
+
+message GetRecordRequest {
+  string id = 1; 
+  Record record = 2;
+}
+    
+message GetRecordResponse {
+  string id = 1;
+  Record record = 2;
+  LastUpdateBorder border = 3;
+  string error = 4;
+}
+
+message DeleteRecordRequest { 
+  Record record = 1;
+}
+      
+message DeleteRecordResponse {
+  string id = 1;
+  LastUpdateBorder border = 2;
+  string error = 3;
+}
+  
+  // The key is a value for arbitrary textual meta-information 
+  // (whether the data belongs to a website, an individual or a bank, lists of one-time activation codes, etc.)
+message MetaInfo {
+  string id = 1;
+  string key = 2;
+  string value = 3;
+}
+
+message SyncRequest {
+  LastUpdateBorder border = 1;
+}
+
+message SyncResponse {
+  repeated Record record = 1;
+  LastUpdateBorder border = 2;
+  string error = 3;
+}
+
+service Records {
+  rpc Add(stream AddRecordRequest) returns (AddRecordResponse);
+  rpc Update(stream UpdateRecordRequest) returns (UpdateRecordResponse);
+  rpc Get(GetRecordRequest) returns (stream GetRecordResponse); 
+  rpc Delete(DeleteRecordRequest) returns (DeleteRecordResponse);
+}
+
+service Sync {
+  rpc Sync(SyncRequest) returns (SyncResponse);
+}
