@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package gophkeeper;
 
-option go_package = "github.com/ArtemShalinFe/gophkeeper/internal";
+option go_package = "github.com/ArtemShalinFe/gophkeeper/internal/server";
 
 message User {
   string id = 1;

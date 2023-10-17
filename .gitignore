@@ -12,11 +12,13 @@
 *.test
 
 # Binaries
+cmd/agent/agent
 cmd/client/client
 cmd/server/server
 
 .DS_Store
 *debug_bin
+.vscode
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
@@ -31,5 +33,12 @@ go.work
 .idea
 .vscode
 
-# Lint
+# lint
 golangci-lint/*
+
+# coverage test
+coverage.html
+
+# certs
+*.pem
+*.key

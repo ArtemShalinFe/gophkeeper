@@ -4,11 +4,7 @@ import "google/protobuf/timestamp.proto";
 
 package gophkeeper;
 
-option go_package = "github.com/ArtemShalinFe/gophkeeper/internal";
-
-message LastUpdateBorder {
-  google.protobuf.Timestamp timestamp = 1;
-}
+option go_package = "github.com/ArtemShalinFe/gophkeeper/internal/server";
 
 message Auth {
   string login = 1;
@@ -49,8 +45,7 @@ message AddRecordRequest {
   
 message AddRecordResponse {
   string id = 1; 
-  LastUpdateBorder border = 2;
-  string error = 3;
+  string error = 2;
 }
 
 message UpdateRecordRequest {
@@ -59,8 +54,7 @@ message UpdateRecordRequest {
     
 message UpdateRecordResponse {
   string id = 1; 
-  LastUpdateBorder border = 2;
-  string error = 3;
+  string error = 2;
 }
 
 message GetRecordRequest {
@@ -71,8 +65,7 @@ message GetRecordRequest {
 message GetRecordResponse {
   string id = 1;
   Record record = 2;
-  LastUpdateBorder border = 3;
-  string error = 4;
+  string error = 3;
 }
 
 message DeleteRecordRequest { 
@@ -81,8 +74,7 @@ message DeleteRecordRequest {
       
 message DeleteRecordResponse {
   string id = 1;
-  LastUpdateBorder border = 2;
-  string error = 3;
+  string error = 2;
 }
   
   // The key is a value for arbitrary textual meta-information 
@@ -94,12 +86,10 @@ message MetaInfo {
 }
 
 message SyncRequest {
-  LastUpdateBorder border = 1;
 }
 
 message SyncResponse {
   repeated Record record = 1;
-  LastUpdateBorder border = 2;
   string error = 3;
 }
 
