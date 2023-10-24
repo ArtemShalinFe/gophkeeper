@@ -49,6 +49,8 @@ func (rs *RecordsService) Get(ctx context.Context, request *GetRecordRequest) (*
 			"an occured error while decode data record from request, err: %v", err)
 	}
 
+	// TODO add decrypt d
+
 	var rr GetRecordResponse
 	rr.Record = &Record{
 		Id:       r.ID,
@@ -76,6 +78,8 @@ func (rs *RecordsService) Add(ctx context.Context, request *AddRecordRequest) (*
 		return nil, status.Errorf(codes.Internal,
 			"an error occurred while encode to bytes, err: %v", err)
 	}
+
+	// TODO add encrypt b
 
 	var rdto models.RecordDTO
 	rdto.Description = request.Record.GetDescription()
@@ -107,6 +111,8 @@ func (rs *RecordsService) Update(ctx context.Context, request *UpdateRecordReque
 	}
 
 	r.Metainfo = convFromPBMetainfo(request.Record.Metainfo)
+
+	// TODO add encrypt r.Data bytes
 
 	_, err = rs.recordStorage.Update(ctx, uid, r)
 	if err != nil {
