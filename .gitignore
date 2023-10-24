@@ -29,6 +29,9 @@ vendor/
 # Go workspace file
 go.work
 
+# db data
+deployments/db/data
+
 # IDEs directories
 .idea
 .vscode

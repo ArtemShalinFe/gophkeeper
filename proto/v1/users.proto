@@ -10,24 +10,22 @@ message User {
 
 message RegisterRequest {
   string login = 1;
-  string pwd = 2;
+  string password = 2;
 }
 
 message RegisterResponse {
   User user = 1;
-  string jwt = 2;
-  string error = 3;
+  string error = 2;
 }
 
 message LoginRequest {
   string login = 1;
-  string pwd = 2;
+  string password = 2;
 }
 
 message LoginResponse {
   User user = 1;
-  string jwt = 2;
-  string error = 3;
+  string error = 2;
 }
 
 service Users {

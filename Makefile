@@ -4,27 +4,27 @@ ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 .PHONY: all
 all: ;
 
-# BUILD-CLIENT
-.PHONY: build-client
-buildclient:
-	go build -C ./cmd/client -o $(shell pwd)/cmd/client/gophermart
-
 # BUILD-AGENT
-.PHONY: build-agent
-build-agent:
-	go build -C ./cmd/agent -o $(shell pwd)/cmd/agent/gophermart
+.PHONY: build-gagent
+build-gagent:
+	go build -C ./cmd/gagent -o $(shell pwd)/cmd/gagent/gagent
+
+# BUILD-CLIENT
+.PHONY: build-gclient
+build-gclient:
+	go build -C ./cmd/gclient -o $(shell pwd)/cmd/gclient/gclient
 
 # BUILD-SERVER
-.PHONY: build-server
-build-server:
-	go build -C ./cmd/server -o $(shell pwd)/cmd/server/gophermart
+.PHONY: build-gserver
+build-gserver:
+	go build -C ./cmd/gserver -o $(shell pwd)/cmd/gserver/gserver
 
 # BUILD
 .PHONY: build
 build:
-	build-agent
-	build-client
-	build-server
+	make build-gagent
+	make build-gclient
+	make build-gserver
 
 # TESTS
 .PHONY: tests
@@ -40,10 +40,30 @@ lint:
     -v $(ROOT_DIR):/app \
     -v $(ROOT_DIR)/golangci-lint/.cache:/root/.cache \
     -w /app \
-    golangci/golangci-lint:v1.53.3 \
+    golangci/golangci-lint:v1.54 \
         golangci-lint run \
         -c .golangci-lint.yml \
     > ./golangci-lint/report.json
+
+# POSTGRESQL
+.PHONY: run-pg
+run-pg:
+	docker run --rm \
+		--name=postgresql \
+		-v $(ROOT_DIR)/deployments/db/init/:/docker-entrypoint-initdb.d \
+		-v $(ROOT_DIR)/deployments/db/data/:/var/lib/postgresql/data \
+		-e POSTGRES_PASSWORD=gopher \
+		-d \
+		-p 5432:5432 \
+		postgres:15.3
+
+.PHONY: stop-pg
+stop-pg:
+	docker stop postgresql
+
+.PHONY: clean-data
+clean-data:
+	rm -rf ./deployments/db/data/	
 
 .PHONY: mocks
 mocks: protoc

@@ -1,0 +1,53 @@
+version: "3.9"
+services:
+  
+  postgres:
+    image: postgres:15.3
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: "/var/lib/postgresql/data"
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d
+      - /tmp/gophkeeper/db/data:/var/lib/postgresql/data      
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  gserver:
+      build:
+        context: ./..
+        dockerfile: deployments/gserver/Dockerfile
+      ports:
+        - ${GKS_ADDRESS}:${GKS_ADDRESS}
+      depends_on:
+        - postgres
+      environment:
+        - GKS_ADDRESS=${GKS_ADDRESS}
+        - DATABASE_DSN='postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/gophkeeper?sslmode=disable'
+      restart: always
+
+  gagent:
+      build:
+        context: ./..
+        dockerfile: deployments/gagent/Dockerfile
+      ports:
+        - ${GKA_ADDRESS}:${GKA_ADDRESS}
+      depends_on:
+        - gserver
+      environment:
+        - GKA_ADDRESS=${GKA_ADDRESS}
+        - GKS_ADDRESS=${GKS_ADDRESS}
+      restart: always
+  
+  gclient:
+      build:
+        context: ./..
+        dockerfile: deployments/gagent/Dockerfile
+      depends_on:
+        - gagent
+      restart: always

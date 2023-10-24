@@ -7,18 +7,19 @@ import (
 )
 
 type ServerCfg struct {
-	Addr             string `env:"ADDRESS" json:"address"`
-	PrivateCryptoKey string `env:"CRYPTO_KEY" json:"private_key"`
-	CertFilePath     string `env:"CERTIFICATE" json:"certificate"`
+	Addr             string `env:"GKS_ADDRESS" json:"gkeeper_address"`
+	DSN              string `env:"DATABASE_DSN" json:"dsn"`
+	PrivateCryptoKey string `env:"CRYPTO_KEY" json:"server_private_key"`
+	CertFilePath     string `env:"CERTIFICATE" json:"server_certificate"`
 }
 
-func NewConfig() *ServerCfg {
+func NewServerCfg() *ServerCfg {
 	return &ServerCfg{}
 }
 
-func ReadEnvConfig(cfg *ServerCfg) error {
+func ReadEnvServerCfg(cfg *ServerCfg) error {
 	if err := env.Parse(cfg); err != nil {
-		return fmt.Errorf("an occured error when parse server config err: %w", err)
+		return fmt.Errorf("an error occured when parse server config err: %w", err)
 	}
 	return nil
 }

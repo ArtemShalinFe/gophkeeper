@@ -10,9 +10,10 @@ const testString = "test"
 func setTestEnvVars(t *testing.T) {
 	t.Helper()
 
-	t.Setenv("ADDRESS", testString)
+	t.Setenv("GKS_ADDRESS", testString)
 	t.Setenv("CRYPTO_KEY", testString)
 	t.Setenv("CERTIFICATE", testString)
+	t.Setenv("DATABASE_DSN", testString)
 }
 
 func TestParseServerConfig(t *testing.T) {
@@ -26,11 +27,12 @@ func TestParseServerConfig(t *testing.T) {
 	}{
 		{
 			name: "check reading env",
-			cfg:  NewConfig(),
+			cfg:  NewServerCfg(),
 			want: &ServerCfg{
 				Addr:             testString,
 				CertFilePath:     testString,
 				PrivateCryptoKey: testString,
+				DSN:              testString,
 			},
 			wantErr: false,
 		},
@@ -44,14 +46,14 @@ func TestParseServerConfig(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ReadEnvConfig(tt.cfg); err != nil {
+			if err := ReadEnvServerCfg(tt.cfg); err != nil {
 				if !tt.wantErr {
-					t.Errorf("ParseServerConfig() error = %v, wantErr %v", err, tt.wantErr)
+					t.Errorf("ReadEnvServerCfg() error = %v, wantErr %v", err, tt.wantErr)
 					return
 				}
 			}
 			if !tt.wantErr && !reflect.DeepEqual(tt.cfg, tt.want) {
-				t.Errorf("ParseServerConfig() = %v, want %v", tt.cfg, tt.want)
+				t.Errorf("ReadEnvServerCfg() = %v, want %v", tt.cfg, tt.want)
 			}
 		})
 	}

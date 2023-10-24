@@ -13,7 +13,6 @@ import (
 	"math/big"
 	"os"
 	"path"
-	"reflect"
 	"testing"
 	"time"
 
@@ -159,39 +158,6 @@ func Test_serverCreds(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("serverCreds() error = %v, wantErr %v", err, tt.wantErr)
 				return
-			}
-		})
-	}
-}
-
-func TestInitServer(t *testing.T) {
-	type args struct {
-		cfg *config.ServerCfg
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *GRPCServer
-		wantErr bool
-	}{
-		{
-			name: "#1 positive case",
-			args: args{
-				cfg: &config.ServerCfg{},
-			},
-			want:    &GRPCServer{},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := InitServer(tt.args.cfg)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("InitServer() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("InitServer() = %v, want %v", got, tt.want)
 			}
 		})
 	}

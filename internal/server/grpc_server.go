@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"encoding/gob"
 	"fmt"
+	"net"
 	"time"
 
 	"go.uber.org/zap"
@@ -15,17 +16,25 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"github.com/ArtemShalinFe/gophkeeper/internal/config"
+	"github.com/ArtemShalinFe/gophkeeper/internal/models"
 )
 
-type GRPCServer struct {
-	grpcServer *grpc.Server
-	log        *zap.Logger
-	addr       string
+type GKServer struct {
+	grpcServer     *grpc.Server
+	log            *zap.Logger
+	UsersService   *UsersService
+	RecordsService *RecordsService
+	addr           string
 }
 
-func InitServer(cfg *config.ServerCfg) (*GRPCServer, error) {
-	srv := &GRPCServer{
-		addr: cfg.Addr,
+func InitServer(rs models.RecordStorage,
+	us models.UserStorage,
+	log *zap.Logger,
+	cfg *config.ServerCfg) (*GKServer, error) {
+	srv := &GKServer{
+		addr:           cfg.Addr,
+		UsersService:   NewUsersService(log, us),
+		RecordsService: NewRecordsService(log, rs),
 	}
 
 	creds, err := serverCreds(cfg)
@@ -54,7 +63,7 @@ func serverCreds(cfg *config.ServerCfg) (credentials.TransportCredentials, error
 	}
 }
 
-func (s *GRPCServer) requestLogger() grpc.UnaryServerInterceptor {
+func (s *GKServer) requestLogger() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context,
 		req interface{},
 		info *grpc.UnaryServerInfo,
@@ -91,4 +100,32 @@ func responseSize(val any) (int, error) {
 	}
 	b := buff.Bytes()
 	return binary.Size(b), nil
+}
+
+func (s *GKServer) Serve(lis net.Listener) error {
+	if err := s.grpcServer.Serve(lis); err != nil {
+		return fmt.Errorf("an occured error when server serve request, err: %w", err)
+	}
+	return nil
+}
+
+func (s *GKServer) ListenAndServe() error {
+	listen, err := net.Listen("tcp", s.addr)
+	if err != nil {
+		return fmt.Errorf("an occured error when trying listen address %s, err: %w", s.addr, err)
+	}
+
+	RegisterUsersServer(s.grpcServer, s.UsersService)
+	RegisterRecordsServer(s.grpcServer, s.RecordsService)
+
+	if err := s.grpcServer.Serve(listen); err != nil {
+		return fmt.Errorf("an occured error when grpc server serve, err: %w", err)
+	}
+
+	return nil
+}
+
+func (s *GKServer) Shutdown(ctx context.Context) error {
+	s.grpcServer.GracefulStop()
+	return nil
 }
