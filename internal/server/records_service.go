@@ -40,10 +40,6 @@ func (rs *RecordsService) Get(ctx context.Context, request *GetRecordRequest) (*
 		rr.Error = fmt.Sprintf(errUnauthenticatedTemplate, err)
 		return &rr, status.Errorf(codes.Internal, errUnauthenticatedTemplate, err)
 	}
-	if strings.TrimSpace(uid) == "" {
-		rr.Error = fmt.Sprintf(errUnauthenticatedTemplate, err)
-		return &rr, status.Errorf(codes.Internal, errUnauthenticatedTemplate, err)
-	}
 
 	r, err := rs.recordStorage.Get(ctx, uid, request.GetId())
 	if err != nil {
@@ -67,38 +63,43 @@ func (rs *RecordsService) Get(ctx context.Context, request *GetRecordRequest) (*
 }
 
 func (rs *RecordsService) Add(ctx context.Context, request *AddRecordRequest) (*AddRecordResponse, error) {
+	var rr AddRecordResponse
+
 	uid, err := getUserIDFromContext(ctx)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, errUnauthenticatedTemplate, err)
+		er := fmt.Sprintf(errUnauthenticatedTemplate, err)
+		rr.Error = er
+		return &rr, status.Errorf(codes.Internal, er)
 	}
 
 	d, err := convDataRecordFromProtobuff(request.Record.Data)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal,
-			"an error occurred while retrieving a record data from request, err: %v", err)
-	}
-
-	b, err := d.ToByte()
-	if err != nil {
-		return nil, status.Errorf(codes.Internal,
-			"an error occurred while encode to bytes, err: %v", err)
+		er := fmt.Sprintf("an error occurred while retrieving a record data from request, err: %v", err)
+		rr.Error = er
+		return &rr, status.Errorf(codes.Internal, er)
 	}
 
 	// TODO add encrypt b
 
-	var rdto models.RecordDTO
-	rdto.Description = request.Record.GetDescription()
-	rdto.Hashsum = request.Record.GetHashsum()
-	rdto.Data = b
-	rdto.Metainfo = convFromPBMetainfo(request.Record.Metainfo)
-
-	r, err := rs.recordStorage.Add(ctx, uid, &rdto)
+	rdto, err := models.NewRecordDTO(
+		request.Record.GetDescription(),
+		convDataTypeFromProtobuff(request.Record.GetType()),
+		d,
+		convFromPBMetainfo(request.Record.Metainfo),
+	)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal,
-			"an error occurred while add record in storage, err: %v", err)
+		er := fmt.Sprintf("an error occurred while encode record dto from request, err: %v", err)
+		rr.Error = er
+		return &rr, status.Errorf(codes.Internal, er)
 	}
 
-	var rr AddRecordResponse
+	r, err := rs.recordStorage.Add(ctx, uid, rdto)
+	if err != nil {
+		er := fmt.Sprintf("an error occurred while add record in storage, err: %v", err)
+		rr.Error = er
+		return &rr, status.Errorf(codes.Internal, er)
+	}
+
 	rr.Id = r.ID
 	return &rr, nil
 }
@@ -151,7 +152,7 @@ func convDataRecordFromProtobuff(rData isRecord_Data) (models.Byter, error) {
 	case *Record_Auth:
 		return &models.Auth{
 			Login:    d.Auth.GetLogin(),
-			Password: d.Auth.GetLogin(),
+			Password: d.Auth.GetPwd(),
 		}, nil
 	case *Record_Text:
 		return &models.Text{
@@ -244,6 +245,21 @@ func convFromProtobuffToRecord(r *Record) (*models.Record, error) {
 	}, nil
 }
 
+func convDataTypeFromProtobuff(dt DataType) models.DataType {
+	switch dt {
+	case *DataType_AUTH.Enum():
+		return models.AuthType
+	case *DataType_TEXT.Enum():
+		return models.TextType
+	case *DataType_BINARY.Enum():
+		return models.BinaryType
+	case *DataType_CARD.Enum():
+		return models.CardType
+	default:
+		return "unknow type"
+	}
+}
+
 func convDataTypeToProtobuff(t string) DataType {
 	switch t {
 	case string(models.AuthType):
@@ -281,8 +297,10 @@ func convRecordToProtobuff(r *models.Record) (*Record, error) {
 func convFromPBMetainfo(m []*Metainfo) []*models.Metainfo {
 	mi := make([]*models.Metainfo, len(m))
 	for i := 0; i < len(m); i++ {
-		mi[i].Key = m[i].Key
-		mi[i].Value = m[i].Value
+		mi[i] = &models.Metainfo{
+			Key:   m[i].Key,
+			Value: m[i].Value,
+		}
 	}
 	return mi
 }
@@ -310,6 +328,10 @@ func getUserIDFromContext(ctx context.Context) (string, error) {
 	}
 
 	id := ids[0]
+
+	if strings.TrimSpace(id) == "" {
+		return "", fmt.Errorf("header %s is empty", userIDHeader)
+	}
 
 	return id, nil
 }
