@@ -35,7 +35,7 @@ type RecordDTO struct {
 func NewRecordDTO(description string, dataType DataType, data Byter, metainfo []*Metainfo) (*RecordDTO, error) {
 	b, err := data.ToByte()
 	if err != nil {
-		return nil, fmt.Errorf("an error occured while converted data record to bytes, err: %w", err)
+		return nil, fmt.Errorf("an error occured while converted data record dto to bytes, err: %w", err)
 	}
 
 	hs, err := hashsum(b)
@@ -65,13 +65,57 @@ type Record struct {
 	Version     int         `json:"version"`
 }
 
+func NewRecord(id string,
+	description string,
+	dataType DataType,
+	created time.Time,
+	modified time.Time,
+	data Byter,
+	metainfo []*Metainfo,
+	deleted bool,
+	version int) (*Record, error) {
+	b, err := data.ToByte()
+	if err != nil {
+		return nil, fmt.Errorf("an error occured while converted data record to bytes, err: %w", err)
+	}
+
+	hs, err := hashsum(b)
+	if err != nil {
+		return nil, fmt.Errorf("an error occured while create record, err: %w", err)
+	}
+	return &Record{
+		ID:          id,
+		Description: description,
+		Type:        string(dataType),
+		Created:     created,
+		Modified:    modified,
+		Data:        b,
+		Hashsum:     hs,
+		Metainfo:    metainfo,
+		Deleted:     deleted,
+		Version:     version,
+	}, nil
+}
+
 func RecordStringHeader() string {
-	return "\tDESCRIPTION\tTYPE\tCREATED\tMODIFIED\tHASHSUM\tDELETED\tVERSION"
+	return "ID\tDESCRIPTION\tTYPE\tCREATED\tMODIFIED\tHASHSUM\tDELETED\tVERSION"
 }
 
 func (r *Record) String() string {
 	return fmt.Sprintf("%s\t%s\t%s\t%v\t%v\t%s\t%v\t%d",
 		r.ID, r.Description, r.Type, r.Created, r.Modified, r.Hashsum, r.Deleted, r.Version)
+}
+
+type Vector interface {
+	Increment(*Record)
+	Clone() []*Record
+	IsSame(*Record) bool
+	IsLower(*Record) bool
+	IsHigher(*Record) bool
+}
+
+func (r *Record) Increment(stg RecordStorage) {
+	r.Version++
 }
 
 type RecordStorage interface {

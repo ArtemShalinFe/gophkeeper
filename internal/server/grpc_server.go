@@ -33,6 +33,7 @@ func InitServer(rs models.RecordStorage,
 	cfg *config.ServerCfg) (*GKServer, error) {
 	srv := &GKServer{
 		addr:           cfg.Addr,
+		log:            log,
 		UsersService:   NewUsersService(log, us),
 		RecordsService: NewRecordsService(log, rs),
 	}

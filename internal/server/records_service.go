@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"go.uber.org/zap"
 	codes "google.golang.org/grpc/codes"
@@ -32,31 +33,35 @@ func NewRecordsService(log *zap.Logger, recordStorage models.RecordStorage) *Rec
 var errUnauthenticatedTemplate = "an occured error while retrieving user id from context, err: %v"
 
 func (rs *RecordsService) Get(ctx context.Context, request *GetRecordRequest) (*GetRecordResponse, error) {
+	var rr GetRecordResponse
+
 	uid, err := getUserIDFromContext(ctx)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, errUnauthenticatedTemplate, err)
+		rr.Error = fmt.Sprintf(errUnauthenticatedTemplate, err)
+		return &rr, status.Errorf(codes.Internal, errUnauthenticatedTemplate, err)
+	}
+	if strings.TrimSpace(uid) == "" {
+		rr.Error = fmt.Sprintf(errUnauthenticatedTemplate, err)
+		return &rr, status.Errorf(codes.Internal, errUnauthenticatedTemplate, err)
 	}
 
 	r, err := rs.recordStorage.Get(ctx, uid, request.GetId())
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound,
-			"an occured error while retrieving record from storage, err: %v", err)
+		er := fmt.Sprintf("an occured error while retrieving record from storage, err: %v", err)
+		rr.Error = er
+		return &rr, status.Errorf(codes.NotFound, er)
 	}
 
-	d, err := convDataRecordToProtobuff(r)
+	record, err := convRecordToProtobuff(r)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal,
-			"an occured error while decode data record from request, err: %v", err)
+		er := fmt.Sprintf("an occured error while decode record from request, err: %v", err)
+		rr.Error = er
+		return &rr, status.Errorf(codes.Internal, er)
 	}
 
 	// TODO add decrypt d
 
-	var rr GetRecordResponse
-	rr.Record = &Record{
-		Id:       r.ID,
-		Data:     d,
-		Metainfo: convMetainfoToProtobuff(r.Metainfo),
-	}
+	rr.Record = record
 
 	return &rr, nil
 }
@@ -241,13 +246,13 @@ func convFromProtobuffToRecord(r *Record) (*models.Record, error) {
 
 func convDataTypeToProtobuff(t string) DataType {
 	switch t {
-	case DataType_AUTH.String():
+	case string(models.AuthType):
 		return DataType_AUTH
-	case DataType_TEXT.String():
+	case string(models.TextType):
 		return DataType_TEXT
-	case DataType_BINARY.String():
+	case string(models.BinaryType):
 		return DataType_BINARY
-	case DataType_CARD.String():
+	case string(models.CardType):
 		return DataType_CARD
 	default:
 		return DataType_UNKNOWN
@@ -285,8 +290,10 @@ func convFromPBMetainfo(m []*Metainfo) []*models.Metainfo {
 func convMetainfoToProtobuff(m []*models.Metainfo) []*Metainfo {
 	mi := make([]*Metainfo, len(m))
 	for i := 0; i < len(m); i++ {
-		mi[i].Key = m[i].Key
-		mi[i].Value = m[i].Value
+		mi[i] = &Metainfo{
+			Key:   m[i].Key,
+			Value: m[i].Value,
+		}
 	}
 	return mi
 }

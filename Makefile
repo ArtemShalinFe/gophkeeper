@@ -66,6 +66,12 @@ stop-pg:
 clean-data:
 	rm -rf ./deployments/db/data/	
 
+# MOCKS
+.PHONY: mocks
+mocks: protoc
+	mockgen -source=internal/models/users.go -destination=internal/server/mock_users_service.go -package server
+	mockgen -source=internal/models/records.go -destination=internal/server/mock_records_service.go -package server
+
 # PROTOBUF
 .PHONY: protoc
 protoc:

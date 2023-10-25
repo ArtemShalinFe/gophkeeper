@@ -37,7 +37,7 @@ func (db *DB) List(ctx context.Context, userID string) ([]*models.Record, error)
 		}
 	}(tx)
 
-	sql := `SELECT r.id, r.userid, r.description, r.dtype, r.created, r.modified, r.hashsum, dr.data
+	sql := `SELECT r.id, r.userid, r.description, r.dtype, r.created, r.modified, r.hashsum, r.version, dr.data
 	FROM records as r
 		LEFT JOIN datarecords as dr
 		ON records.id = datarecords.recordid;
@@ -53,7 +53,16 @@ func (db *DB) List(ctx context.Context, userID string) ([]*models.Record, error)
 	var rids []string
 	for rows.Next() {
 		var r models.Record
-		err := rows.Scan(&r.ID, &r.Owner, &r.Description, &r.Type, &r.Created, &r.Modified, &r.Hashsum, &r.Data)
+		err := rows.Scan(
+			&r.ID,
+			&r.Owner,
+			&r.Description,
+			&r.Type,
+			&r.Created,
+			&r.Modified,
+			&r.Hashsum,
+			&r.Version,
+			&r.Data)
 		if err != nil {
 			return nil, fmt.Errorf("an error occurred when filling in an array of records, err: %w", err)
 		}
@@ -80,7 +89,7 @@ func (db *DB) List(ctx context.Context, userID string) ([]*models.Record, error)
 }
 
 func (db *DB) Get(ctx context.Context, userID string, recordID string) (*models.Record, error) {
-	sql := `SELECT r.id, r.userid, r.description, r.dtype, r.created, r.modified, r.hashsum, dr.data
+	sql := `SELECT r.id, r.userid, r.description, r.dtype, r.created, r.modified, r.hashsum, r.version, dr.data
 	FROM records as r
 		LEFT JOIN datarecords as dr
 		ON records.id = datarecords.recordid;
@@ -96,6 +105,7 @@ func (db *DB) Get(ctx context.Context, userID string, recordID string) (*models.
 		&r.Created,
 		&r.Modified,
 		&r.Hashsum,
+		&r.Version,
 		&r.Data); err != nil {
 		return nil, fmt.Errorf("an occured error while getting record, err: %w", err)
 	}
@@ -119,8 +129,8 @@ func (db *DB) Add(ctx context.Context, userID string, record *models.RecordDTO) 
 
 	var r models.Record
 
-	sql := `INSERT INTO records(description, dtype, userid, created, modified, hashsum)
-	VALUES ($1, $2, $3, $4)
+	sql := `INSERT INTO records(description, dtype, userid, created, modified, hashsum, version)
+	VALUES ($1, $2, $3, $4, 1)
 	ON CONFLICT (id) DO UPDATE records SET (description = $1, modified = CURRENT_TIMESTAMP, hashsum = $4)
 	RETURNING 
 		id, userid, description, dtype, created, modified, hashsum;`
@@ -166,9 +176,9 @@ func (db *DB) Update(ctx context.Context, userID string, record *models.Record) 
 
 	var r models.Record
 
-	sql := `UPDATE records SET (description = $1, modified = CURRENT_TIMESTAMP, hashsum = $4)
+	sql := `UPDATE records SET (description = $1, modified = CURRENT_TIMESTAMP, hashsum = $4, version = $5)
 	RETURNING id, userid, description, dtype, created, modified, hashsum;`
-	row := tx.QueryRow(ctx, sql, record.Description, record.Type, userID, record.Hashsum)
+	row := tx.QueryRow(ctx, sql, record.Description, record.Type, userID, record.Hashsum, record.Version)
 	if err := row.Scan(&r.ID, &r.Owner, &r.Description, &r.Type, &r.Created, &r.Modified, &r.Hashsum); err != nil {
 		return nil, fmt.Errorf("an occured error while update record, err: %w", err)
 	}

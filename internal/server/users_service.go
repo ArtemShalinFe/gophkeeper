@@ -28,30 +28,34 @@ func NewUsersService(log *zap.Logger, userStorage models.UserStorage) *UsersServ
 }
 
 func (us *UsersService) Register(ctx context.Context, request *RegisterRequest) (*RegisterResponse, error) {
+	var resp RegisterResponse
+
 	udto := getUserDTOFromRequest(request)
 
 	u, err := udto.AddUser(ctx, us.userStorage)
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred during user registration, err: %w", err)
+		er := fmt.Errorf("an error occurred during user registration, err: %w", err)
+		resp.Error = er.Error()
+		return &resp, nil
 	}
 
-	var resp RegisterResponse
-	resp.User.Id = u.ID
-
+	resp.User = &User{Id: u.ID}
 	return &resp, nil
 }
 
 func (us *UsersService) Login(ctx context.Context, request *LoginRequest) (*LoginResponse, error) {
+	var resp LoginResponse
+
 	udto := getUserDTOFromRequest(request)
 
 	u, err := udto.GetUser(ctx, us.userStorage)
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred during user logged in, err: %w", err)
+		er := fmt.Errorf("an error occurred during user logged in, err: %w", err)
+		resp.Error = er.Error()
+		return &resp, nil
 	}
 
-	var resp LoginResponse
-	resp.User.Id = u.ID
-
+	resp.User = &User{Id: u.ID}
 	return &resp, nil
 }
 

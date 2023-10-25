@@ -7,6 +7,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgx/v5 v5.4.3
+	go.uber.org/mock v0.3.0
 	go.uber.org/zap v1.26.0
 )
 

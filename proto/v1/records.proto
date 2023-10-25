@@ -90,6 +90,9 @@ message Record {
   // Metainfo - for storing arbitrary textual meta-information
   // (data belonging to a website, an individual or a bank, lists of one-time activation codes, etc.).
   repeated Metainfo metainfo = 13;
+
+  // file version
+  string version = 14;
 }
 
 // AddRecordRequest - used to add a record.

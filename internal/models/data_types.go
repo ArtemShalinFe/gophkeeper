@@ -40,7 +40,7 @@ type Text struct {
 }
 
 func (t *Text) ToByte() ([]byte, error) {
-	b, err := encode(t.Data)
+	b, err := encode(t)
 	if err != nil {
 		return nil, fmt.Errorf(errEncodeToByteTemplate, err)
 	}
@@ -48,7 +48,7 @@ func (t *Text) ToByte() ([]byte, error) {
 }
 
 func (t *Text) FromByte(b []byte) error {
-	if err := decode(t.Data, b); err != nil {
+	if err := decode(t, b); err != nil {
 		return fmt.Errorf(errDecodeToByteTemplate, err)
 	}
 	return nil
@@ -59,7 +59,7 @@ type Binary struct {
 }
 
 func (b *Binary) ToByte() ([]byte, error) {
-	bs, err := encode(b.Data)
+	bs, err := encode(b)
 	if err != nil {
 		return nil, fmt.Errorf(errEncodeToByteTemplate, err)
 	}
@@ -67,7 +67,7 @@ func (b *Binary) ToByte() ([]byte, error) {
 }
 
 func (b *Binary) FromByte(bs []byte) error {
-	if err := decode(b.Data, bs); err != nil {
+	if err := decode(b, bs); err != nil {
 		return fmt.Errorf(errDecodeToByteTemplate, err)
 	}
 	return nil
@@ -107,7 +107,7 @@ func encode(val any) ([]byte, error) {
 func decode(val any, b []byte) error {
 	buf := bytes.NewBuffer(b)
 	dec := gob.NewDecoder(buf)
-	if err := dec.Decode(&val); err != nil {
+	if err := dec.Decode(val); err != nil {
 		return fmt.Errorf("an error occured while decode from binary, err: %w", err)
 	}
 

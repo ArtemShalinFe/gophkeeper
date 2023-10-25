@@ -17,6 +17,7 @@ create table records(
     created timestamp with time zone default current_timestamp,
     modified timestamp with time zone default current_timestamp,
     hashsum varchar(64) not null,
+    version numeric not null,
     primary key (id),
     foreign key (userid) references users (id)
 );
