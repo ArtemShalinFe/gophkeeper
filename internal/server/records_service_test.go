@@ -432,3 +432,279 @@ func TestRecordsService_Add(t *testing.T) {
 		})
 	}
 }
+
+func TestRecordsService_Update(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	us := NewMockUserStorage(ctrl)
+	udto := userDTO()
+	u := user()
+	us.EXPECT().GetUser(gomock.Any(), udto).AnyTimes().Return(u, nil)
+
+	rs := NewMockRecordStorage(ctrl)
+
+	r1 := generateAuthRecord(t)
+	r1pb, err := convRecordToProtobuff(r1)
+	if err != nil {
+		t.Errorf("an error occured while encode auth record to protobuff, err: %v", err)
+	}
+
+	r2 := generateTextRecord(t)
+	r2pb, err := convRecordToProtobuff(r2)
+	if err != nil {
+		t.Errorf("an error occured while encode text record to protobuff, err: %v", err)
+	}
+
+	r3 := generateBinaryRecord(t)
+	r3pb, err := convRecordToProtobuff(r3)
+	if err != nil {
+		t.Errorf("an error occured while encode binary record to protobuff, err: %v", err)
+	}
+
+	r4 := generateCardRecord(t)
+	r4pb, err := convRecordToProtobuff(r4)
+	if err != nil {
+		t.Errorf("an error occured while encode card record to protobuff, err: %v", err)
+	}
+
+	rs.EXPECT().Update(gomock.Any(), u.ID, gomock.Any()).Return(r1, nil)
+	rs.EXPECT().Update(gomock.Any(), u.ID, gomock.Any()).Return(r2, nil)
+	rs.EXPECT().Update(gomock.Any(), u.ID, gomock.Any()).Return(r3, nil)
+	rs.EXPECT().Update(gomock.Any(), u.ID, gomock.Any()).Return(r4, nil)
+	rs.EXPECT().Update(gomock.Any(), u.ID, gomock.Any()).Return(nil, errSomethingWentWrong)
+
+	d, err := NewRecordServiceDialer(t, us, rs)
+	if err != nil {
+		t.Errorf("an occured error when creating a new dialer, err: %v", err)
+	}
+
+	tests := []struct {
+		name    string
+		userid  string
+		request *UpdateRecordRequest
+		want    *UpdateRecordResponse
+		wantErr bool
+	}{
+		{
+			name:   "positive case add auth record",
+			userid: u.ID,
+			request: &UpdateRecordRequest{
+				Record: r1pb,
+			},
+			want: &UpdateRecordResponse{
+				Id: r1.ID,
+			},
+			wantErr: false,
+		},
+		{
+			name:   "positive case add text record",
+			userid: u.ID,
+			request: &UpdateRecordRequest{
+				Record: r2pb,
+			},
+			want: &UpdateRecordResponse{
+				Id: r2.ID,
+			},
+			wantErr: false,
+		},
+		{
+			name:   "positive case add binary record",
+			userid: u.ID,
+			request: &UpdateRecordRequest{
+				Record: r3pb,
+			},
+			want: &UpdateRecordResponse{
+				Id: r3.ID,
+			},
+			wantErr: false,
+		},
+		{
+			name:   "positive case add card record",
+			userid: u.ID,
+			request: &UpdateRecordRequest{
+				Record: r4pb,
+			},
+			want: &UpdateRecordResponse{
+				Id: r4.ID,
+			},
+			wantErr: false,
+		},
+		{
+			name:   "negative case not authorized empty string userid",
+			userid: " ",
+			request: &UpdateRecordRequest{
+				Record: r4pb,
+			},
+			want: &UpdateRecordResponse{
+				Id: r4.ID,
+			},
+			wantErr: true,
+		},
+		{
+			name:   "negative case not authorized",
+			userid: "",
+			request: &UpdateRecordRequest{
+				Record: r4pb,
+			},
+			want: &UpdateRecordResponse{
+				Id: r4.ID,
+			},
+			wantErr: true,
+		},
+		{
+			name:   "negative case storage error",
+			userid: u.ID,
+			request: &UpdateRecordRequest{
+				Record: r4pb,
+			},
+			want: &UpdateRecordResponse{
+				Id: r4.ID,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			rctx := context.Background()
+
+			conn, err := grpc.DialContext(rctx, "bufnet",
+				grpc.WithContextDialer(d.bufDialer),
+				grpc.WithTransportCredentials(insecure.NewCredentials()))
+			if err != nil {
+				t.Errorf("failed to dial bufnet: %v", err)
+			}
+			defer conn.Close()
+
+			client := NewRecordsClient(conn)
+
+			if tt.userid != "" {
+				rctx = contextWithUserID(context.Background(), tt.userid)
+			}
+			got, err := client.Update(rctx, tt.request)
+			if (got.Error != "") != tt.wantErr {
+				t.Errorf("RecordsService.Update() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && !reflect.DeepEqual(got.Id, tt.want.Id) {
+				t.Errorf("RecordsService.Update() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRecordsService_Delete(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	us := NewMockUserStorage(ctrl)
+	udto := userDTO()
+	u := user()
+	us.EXPECT().GetUser(gomock.Any(), udto).AnyTimes().Return(u, nil)
+
+	rs := NewMockRecordStorage(ctrl)
+
+	r1 := generateAuthRecord(t)
+	r2 := generateTextRecord(t)
+	r3 := generateBinaryRecord(t)
+	r4 := generateCardRecord(t)
+
+	rs.EXPECT().Delete(gomock.Any(), u.ID, r1.ID).Return(nil)
+	rs.EXPECT().Delete(gomock.Any(), u.ID, r2.ID).Return(nil)
+	rs.EXPECT().Delete(gomock.Any(), u.ID, r3.ID).Return(nil)
+	rs.EXPECT().Delete(gomock.Any(), u.ID, r4.ID).Return(nil)
+	rs.EXPECT().Delete(gomock.Any(), u.ID, r4.ID).Return(errSomethingWentWrong)
+
+	d, err := NewRecordServiceDialer(t, us, rs)
+	if err != nil {
+		t.Errorf("an occured error when creating a new dialer, err: %v", err)
+	}
+
+	tests := []struct {
+		name    string
+		userid  string
+		request *DeleteRecordRequest
+		wantErr bool
+	}{
+		{
+			name:   "positive case add auth record",
+			userid: u.ID,
+			request: &DeleteRecordRequest{
+				Id: r1.ID,
+			},
+			wantErr: false,
+		},
+		{
+			name:   "positive case add text record",
+			userid: u.ID,
+			request: &DeleteRecordRequest{
+				Id: r2.ID,
+			},
+			wantErr: false,
+		},
+		{
+			name:   "positive case add binary record",
+			userid: u.ID,
+			request: &DeleteRecordRequest{
+				Id: r3.ID,
+			},
+			wantErr: false,
+		},
+		{
+			name:   "positive case add card record",
+			userid: u.ID,
+			request: &DeleteRecordRequest{
+				Id: r4.ID,
+			},
+			wantErr: false,
+		},
+		{
+			name:   "negative case not authorized empty string userid",
+			userid: " ",
+			request: &DeleteRecordRequest{
+				Id: r4.ID,
+			},
+			wantErr: true,
+		},
+		{
+			name:   "negative case not authorized",
+			userid: "",
+			request: &DeleteRecordRequest{
+				Id: r4.ID,
+			},
+			wantErr: true,
+		},
+		{
+			name:   "negative case storage error",
+			userid: u.ID,
+			request: &DeleteRecordRequest{
+				Id: r4.ID,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			rctx := context.Background()
+
+			conn, err := grpc.DialContext(rctx, "bufnet",
+				grpc.WithContextDialer(d.bufDialer),
+				grpc.WithTransportCredentials(insecure.NewCredentials()))
+			if err != nil {
+				t.Errorf("failed to dial bufnet: %v", err)
+			}
+			defer conn.Close()
+
+			client := NewRecordsClient(conn)
+
+			if tt.userid != "" {
+				rctx = contextWithUserID(context.Background(), tt.userid)
+			}
+			got, err := client.Delete(rctx, tt.request)
+			if (got.Error != "") != tt.wantErr {
+				t.Errorf("RecordsService.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}

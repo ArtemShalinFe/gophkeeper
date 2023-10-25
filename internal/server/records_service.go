@@ -37,8 +37,9 @@ func (rs *RecordsService) Get(ctx context.Context, request *GetRecordRequest) (*
 
 	uid, err := getUserIDFromContext(ctx)
 	if err != nil {
-		rr.Error = fmt.Sprintf(errUnauthenticatedTemplate, err)
-		return &rr, status.Errorf(codes.Internal, errUnauthenticatedTemplate, err)
+		er := fmt.Sprintf(errUnauthenticatedTemplate, err)
+		rr.Error = er
+		return &rr, status.Errorf(codes.Unauthenticated, er)
 	}
 
 	r, err := rs.recordStorage.Get(ctx, uid, request.GetId())
@@ -69,7 +70,7 @@ func (rs *RecordsService) Add(ctx context.Context, request *AddRecordRequest) (*
 	if err != nil {
 		er := fmt.Sprintf(errUnauthenticatedTemplate, err)
 		rr.Error = er
-		return &rr, status.Errorf(codes.Internal, er)
+		return &rr, status.Errorf(codes.Unauthenticated, er)
 	}
 
 	d, err := convDataRecordFromProtobuff(request.Record.Data)
@@ -105,15 +106,20 @@ func (rs *RecordsService) Add(ctx context.Context, request *AddRecordRequest) (*
 }
 
 func (rs *RecordsService) Update(ctx context.Context, request *UpdateRecordRequest) (*UpdateRecordResponse, error) {
+	var rr UpdateRecordResponse
+
 	uid, err := getUserIDFromContext(ctx)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, errUnauthenticatedTemplate, err)
+		er := fmt.Sprintf(errUnauthenticatedTemplate, err)
+		rr.Error = er
+		return &rr, status.Errorf(codes.Unauthenticated, er)
 	}
 
 	r, err := convFromProtobuffToRecord(request.Record)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal,
-			"an error occurred while convert record from protobuff, err: %v", err)
+		er := fmt.Sprintf("an error occurred while convert record from protobuff, err: %v", err)
+		rr.Error = er
+		return &rr, status.Errorf(codes.Internal, er)
 	}
 
 	r.Metainfo = convFromPBMetainfo(request.Record.Metainfo)
@@ -122,29 +128,33 @@ func (rs *RecordsService) Update(ctx context.Context, request *UpdateRecordReque
 
 	_, err = rs.recordStorage.Update(ctx, uid, r)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal,
-			"an error occurred while update record in storage, err: %v", err)
+		er := fmt.Sprintf("an error occurred while update record in storage, err: %v", err)
+		rr.Error = er
+		return &rr, status.Errorf(codes.Internal, er)
 	}
 
-	var rr UpdateRecordResponse
 	rr.Id = r.ID
 	return &rr, nil
 }
 
 func (rs *RecordsService) Delete(ctx context.Context, request *DeleteRecordRequest) (*DeleteRecordResponse, error) {
+	var rr DeleteRecordResponse
 	uid, err := getUserIDFromContext(ctx)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, errUnauthenticatedTemplate, err)
+		er := fmt.Sprintf(errUnauthenticatedTemplate, err)
+		rr.Error = er
+		return &rr, status.Errorf(codes.Unauthenticated, er)
 	}
 
 	recordID := request.GetId()
 
 	if err := rs.recordStorage.Delete(ctx, uid, recordID); err != nil {
-		return nil, status.Errorf(codes.Internal,
-			"an error occurred while add or delete record from storage, err: %v", err)
+		er := fmt.Sprintf("an error occurred while add or delete record from storage, err: %v", err)
+		rr.Error = er
+		return &rr, status.Errorf(codes.Internal, er)
 	}
 
-	return &DeleteRecordResponse{}, nil
+	return &rr, nil
 }
 
 func convDataRecordFromProtobuff(rData isRecord_Data) (models.Byter, error) {
