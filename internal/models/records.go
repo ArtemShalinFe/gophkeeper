@@ -106,18 +106,6 @@ func (r *Record) String() string {
 		r.ID, r.Description, r.Type, r.Created, r.Modified, r.Hashsum, r.Deleted, r.Version)
 }
 
-type Vector interface {
-	Increment(*Record)
-	Clone() []*Record
-	IsSame(*Record) bool
-	IsLower(*Record) bool
-	IsHigher(*Record) bool
-}
-
-func (r *Record) Increment(stg RecordStorage) {
-	r.Version++
-}
-
 type RecordStorage interface {
 	List(ctx context.Context, userID string) ([]*Record, error)
 	Get(ctx context.Context, userID string, recordID string) (*Record, error)
