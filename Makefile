@@ -33,6 +33,7 @@ tests:
 	go test ./... --tags=usetempdir -v -race -count=1 -coverpkg=./... -coverprofile=coverage.out
 	go tool cover -html=coverage.out -o ./coverage.html
 
+# LINT
 .PHONY: lint
 lint:
 	[ -d $(ROOT_DIR)/golangci-lint ] || mkdir -p $(ROOT_DIR)/golangci-lint
@@ -65,12 +66,7 @@ stop-pg:
 clean-data:
 	rm -rf ./deployments/db/data/	
 
-.PHONY: mocks
-mocks: protoc
-	mockgen -source=internal/metrics/metrics.go -destination=internal/metrics/mock_metrics.go -package metrics
-	mockgen -source=internal/metcoll/handlers.go -destination=internal/metcoll/mock_handlers.go -package metcoll
-	mockgen -source=internal/metcoll/metcoll_grpc.pb.go -destination=internal/metcoll/mock_grpc_pb.go -package metcoll
-
+# PROTOBUF
 .PHONY: protoc
 protoc:
 	protoc proto/v1/*.proto  --proto_path=proto/v1 \
