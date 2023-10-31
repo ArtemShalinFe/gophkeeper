@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,9 +10,11 @@ import (
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
 	"github.com/ArtemShalinFe/gophkeeper/internal/config"
 	"github.com/ArtemShalinFe/gophkeeper/internal/models"
@@ -26,11 +29,15 @@ type GKClient struct {
 	certPath string
 }
 
-func NewGKClient(ctx context.Context, cfg *config.AgentCfg, log *zap.Logger) (*GKClient, error) {
+func NewGKClient(ctx context.Context, cfg *config.ClientCfg, log *zap.Logger) (*GKClient, error) {
 	c := &GKClient{
-		addr:     cfg.Addr,
+		addr:     cfg.GKeeper,
 		log:      log,
 		certPath: cfg.CertFilePath,
+	}
+
+	if err := c.setupConn(ctx); err != nil {
+		return nil, fmt.Errorf("an error occured while setup conn to server, err: %w", err)
 	}
 
 	return c, nil
@@ -51,7 +58,7 @@ func getClientCreds(certFilePath string) (credentials.TransportCredentials, erro
 	return creds, nil
 }
 
-func (c *GKClient) SetupConn(ctx context.Context) error {
+func (c *GKClient) setupConn(ctx context.Context) error {
 	opts := c.getDialOpts()
 
 	creds, err := getClientCreds(c.certPath)
@@ -82,7 +89,6 @@ func (c *GKClient) getDialOpts() []grpc.DialOption {
 	}
 
 	chain := grpc.WithChainUnaryInterceptor(
-		// c.clientCompressInterceptor,
 		grpc_retry.UnaryClientInterceptor(retryopts...),
 	)
 
@@ -123,7 +129,7 @@ func (c *GKClient) GetUser(ctx context.Context, us *models.UserDTO) (*models.Use
 	}, nil
 }
 
-func (c *GKClient) List(ctx context.Context, userID string) ([]*models.Record, error) {
+func (c *GKClient) List(ctx context.Context, userID string, offset int, limit int) ([]*models.Record, error) {
 	serverStorage := NewRecordsClient(c.cc)
 
 	headers := map[string]string{
@@ -131,7 +137,11 @@ func (c *GKClient) List(ctx context.Context, userID string) ([]*models.Record, e
 	}
 
 	mctx := metadata.NewOutgoingContext(ctx, metadata.New(headers))
-	lr, err := serverStorage.List(mctx, &ListRecordRequest{})
+	req := &ListRecordRequest{}
+	req.Offset = int32(offset)
+	req.Limit = int32(limit)
+
+	lr, err := serverStorage.List(mctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("an error occured while retrieving list records, err: %w", err)
 	}
@@ -140,7 +150,7 @@ func (c *GKClient) List(ctx context.Context, userID string) ([]*models.Record, e
 	for i := 0; i < len(lr.Records); i++ {
 		r := lr.Records[i]
 
-		rc, err := convFromProtobuffToRecord(r)
+		rc, err := convRecordFromProtobuff(r)
 		if err != nil {
 			return nil, fmt.Errorf("an error occured while converting record from protobuff, err: %w", err)
 		}
@@ -162,10 +172,16 @@ func (c *GKClient) Get(ctx context.Context, userID string, recordID string) (*mo
 	req := &GetRecordRequest{Id: recordID}
 	rr, err := serverStorage.Get(mctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("an error occured while retrieving record, err: %w", err)
+		st, ok := status.FromError(err)
+		if !ok {
+			return nil, fmt.Errorf("an error occured while retrieving record, err: %w", err)
+		}
+		if st.Code() == codes.NotFound {
+			return nil, models.ErrRecordNotFound
+		}
 	}
 
-	r, err := convFromProtobuffToRecord(rr.Record)
+	r, err := convRecordFromProtobuff(rr.Record)
 	if err != nil {
 		return nil, fmt.Errorf("an error occured while encode record to protobuff, err: %w", err)
 	}
@@ -191,6 +207,9 @@ func (c *GKClient) Delete(ctx context.Context, userID string, recordID string) e
 }
 
 func (c *GKClient) Add(ctx context.Context, userID string, record *models.RecordDTO) (*models.Record, error) {
+	if len(record.Data) > models.MaxFileSize {
+		return nil, errors.New(models.ErrLargeFile)
+	}
 	serverStorage := NewRecordsClient(c.cc)
 
 	headers := map[string]string{
@@ -210,7 +229,7 @@ func (c *GKClient) Add(ctx context.Context, userID string, record *models.Record
 		Modified:    now,
 		Data:        record.Data,
 		Hashsum:     record.Hashsum,
-		Metainfo:    record.Metainfo,
+		Metadata:    record.Metadata,
 		Version:     1,
 	}
 

@@ -1,7 +1,13 @@
 package main
 
-import "github.com/ArtemShalinFe/gophkeeper/internal/client"
+import (
+	"context"
+
+	"github.com/ArtemShalinFe/gophkeeper/internal/client"
+	"go.uber.org/zap"
+)
 
 func main() {
-	client.NewApp().Execute()
+	ctx := context.Background()
+	client.NewApp(zap.L()).Start(ctx)
 }

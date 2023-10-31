@@ -1,115 +1,65 @@
 package models
 
 import (
-	"bytes"
-	"encoding/gob"
 	"fmt"
 	"time"
+
+	"github.com/fxamacker/cbor/v2"
 )
 
-var errEncodeToByteTemplate = "an error occured while encode to bytes, err: %w"
-var errDecodeToByteTemplate = "an error occured while decode to bytes, err: %w"
-
-type Byter interface {
-	ToByte() ([]byte, error)
-	FromByte([]byte) error
+type RecordData interface {
+	BinData() ([]byte, error)
 }
 
 type Auth struct {
-	Login    string `json:"login"`
-	Password string `json:"password"`
+	Login    string `cbor:"login"`
+	Password string `cbor:"password"`
 }
 
-func (a *Auth) ToByte() ([]byte, error) {
-	b, err := encode(a)
+func (a *Auth) BinData() ([]byte, error) {
+	b, err := cbor.Marshal(a)
 	if err != nil {
-		return nil, fmt.Errorf(errEncodeToByteTemplate, err)
+		return nil, fmt.Errorf("an error occured while encode auth data to bytes, err: %w", err)
 	}
 	return b, nil
-}
-
-func (a *Auth) FromByte(b []byte) error {
-	if err := decode(a, b); err != nil {
-		return fmt.Errorf(errDecodeToByteTemplate, err)
-	}
-	return nil
 }
 
 type Text struct {
-	Data string `json:"data"`
+	Data string `cbor:"data"`
 }
 
-func (t *Text) ToByte() ([]byte, error) {
-	b, err := encode(t)
+func (t *Text) BinData() ([]byte, error) {
+	b, err := cbor.Marshal(t)
 	if err != nil {
-		return nil, fmt.Errorf(errEncodeToByteTemplate, err)
+		return nil, fmt.Errorf("an error occured while encode text data to bytes, err: %w", err)
 	}
 	return b, nil
 }
 
-func (t *Text) FromByte(b []byte) error {
-	if err := decode(t, b); err != nil {
-		return fmt.Errorf(errDecodeToByteTemplate, err)
-	}
-	return nil
-}
-
 type Binary struct {
-	Data []byte `json:"data"`
+	Name string `cbor:"name"`
+	Ext  string `cbor:"ext"`
+	Data []byte `cbor:"data"`
 }
 
-func (b *Binary) ToByte() ([]byte, error) {
-	bs, err := encode(b)
+func (bin *Binary) BinData() ([]byte, error) {
+	b, err := cbor.Marshal(bin)
 	if err != nil {
-		return nil, fmt.Errorf(errEncodeToByteTemplate, err)
+		return nil, fmt.Errorf("an error occured while encode bin data to bytes, err: %w", err)
 	}
-	return bs, nil
-}
-
-func (b *Binary) FromByte(bs []byte) error {
-	if err := decode(b, bs); err != nil {
-		return fmt.Errorf(errDecodeToByteTemplate, err)
-	}
-	return nil
+	return b, nil
 }
 
 type Card struct {
-	Number string    `json:"number"`
-	Term   time.Time `json:"term"`
-	Owner  string    `json:"owner"`
+	Number string    `cbor:"number"`
+	Term   time.Time `cbor:"term"`
+	Owner  string    `cbor:"owner"`
 }
 
-func (c *Card) ToByte() ([]byte, error) {
-	bs, err := encode(c)
+func (c *Card) BinData() ([]byte, error) {
+	b, err := cbor.Marshal(c)
 	if err != nil {
-		return nil, fmt.Errorf(errEncodeToByteTemplate, err)
+		return nil, fmt.Errorf("an error occured while encode card data to bytes, err: %w", err)
 	}
-	return bs, nil
-}
-
-func (c *Card) FromByte(b []byte) error {
-	if err := decode(c, b); err != nil {
-		return fmt.Errorf(errDecodeToByteTemplate, err)
-	}
-	return nil
-}
-
-func encode(val any) ([]byte, error) {
-	var buff bytes.Buffer
-	enc := gob.NewEncoder(&buff)
-	err := enc.Encode(val)
-	if err != nil {
-		return nil, fmt.Errorf("an error occurred when encode the value to bytes, err: %w", err)
-	}
-	return buff.Bytes(), nil
-}
-
-func decode(val any, b []byte) error {
-	buf := bytes.NewBuffer(b)
-	dec := gob.NewDecoder(buf)
-	if err := dec.Decode(val); err != nil {
-		return fmt.Errorf("an error occured while decode from binary, err: %w", err)
-	}
-
-	return nil
+	return b, nil
 }

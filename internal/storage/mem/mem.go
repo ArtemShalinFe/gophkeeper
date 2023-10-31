@@ -18,7 +18,8 @@ type UserRecordStorage struct {
 
 func NewMemStorage() *MemStorage {
 	ms := &MemStorage{
-		data: make(map[string]*UserRecordStorage),
+		mutex: &sync.RWMutex{},
+		data:  make(map[string]*UserRecordStorage),
 	}
 
 	return ms

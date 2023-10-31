@@ -11,6 +11,7 @@ type ServerCfg struct {
 	DSN              string `env:"DATABASE_DSN" json:"dsn"`
 	PrivateCryptoKey string `env:"CRYPTO_KEY" json:"server_private_key"`
 	CertFilePath     string `env:"CERTIFICATE" json:"server_certificate"`
+	CiphKey          string `env:"CIPHKEY" json:"ciphkey"`
 }
 
 func NewServerCfg() *ServerCfg {

@@ -12,97 +12,6 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockVector is a mock of Vector interface.
-type MockVector struct {
-	ctrl     *gomock.Controller
-	recorder *MockVectorMockRecorder
-}
-
-// MockVectorMockRecorder is the mock recorder for MockVector.
-type MockVectorMockRecorder struct {
-	mock *MockVector
-}
-
-// NewMockVector creates a new mock instance.
-func NewMockVector(ctrl *gomock.Controller) *MockVector {
-	mock := &MockVector{ctrl: ctrl}
-	mock.recorder = &MockVectorMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockVector) EXPECT() *MockVectorMockRecorder {
-	return m.recorder
-}
-
-// Clone mocks base method.
-func (m *MockVector) Clone() []*models.Record {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Clone")
-	ret0, _ := ret[0].([]*models.Record)
-	return ret0
-}
-
-// Clone indicates an expected call of Clone.
-func (mr *MockVectorMockRecorder) Clone() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Clone", reflect.TypeOf((*MockVector)(nil).Clone))
-}
-
-// Increment mocks base method.
-func (m *MockVector) Increment(arg0 *models.Record) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Increment", arg0)
-}
-
-// Increment indicates an expected call of Increment.
-func (mr *MockVectorMockRecorder) Increment(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Increment", reflect.TypeOf((*MockVector)(nil).Increment), arg0)
-}
-
-// IsHigher mocks base method.
-func (m *MockVector) IsHigher(arg0 *models.Record) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsHigher", arg0)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// IsHigher indicates an expected call of IsHigher.
-func (mr *MockVectorMockRecorder) IsHigher(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsHigher", reflect.TypeOf((*MockVector)(nil).IsHigher), arg0)
-}
-
-// IsLower mocks base method.
-func (m *MockVector) IsLower(arg0 *models.Record) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsLower", arg0)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// IsLower indicates an expected call of IsLower.
-func (mr *MockVectorMockRecorder) IsLower(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsLower", reflect.TypeOf((*MockVector)(nil).IsLower), arg0)
-}
-
-// IsSame mocks base method.
-func (m *MockVector) IsSame(arg0 *models.Record) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsSame", arg0)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// IsSame indicates an expected call of IsSame.
-func (mr *MockVectorMockRecorder) IsSame(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSame", reflect.TypeOf((*MockVector)(nil).IsSame), arg0)
-}
-
 // MockRecordStorage is a mock of RecordStorage interface.
 type MockRecordStorage struct {
 	ctrl     *gomock.Controller
@@ -171,18 +80,18 @@ func (mr *MockRecordStorageMockRecorder) Get(ctx, userID, recordID interface{}) 
 }
 
 // List mocks base method.
-func (m *MockRecordStorage) List(ctx context.Context, userID string) ([]*models.Record, error) {
+func (m *MockRecordStorage) List(ctx context.Context, userID string, offset, limit int) ([]*models.Record, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, userID)
+	ret := m.ctrl.Call(m, "List", ctx, userID, offset, limit)
 	ret0, _ := ret[0].([]*models.Record)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockRecordStorageMockRecorder) List(ctx, userID interface{}) *gomock.Call {
+func (mr *MockRecordStorageMockRecorder) List(ctx, userID, offset, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRecordStorage)(nil).List), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRecordStorage)(nil).List), ctx, userID, offset, limit)
 }
 
 // Update mocks base method.

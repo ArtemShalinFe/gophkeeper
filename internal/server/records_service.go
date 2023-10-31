@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/fxamacker/cbor/v2"
 	"go.uber.org/zap"
 	codes "google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -37,26 +38,23 @@ func (rs *RecordsService) Get(ctx context.Context, request *GetRecordRequest) (*
 
 	uid, err := getUserIDFromContext(ctx)
 	if err != nil {
-		er := fmt.Sprintf(errUnauthenticatedTemplate, err)
-		rr.Error = er
-		return &rr, status.Errorf(codes.Unauthenticated, er)
+		return &rr, status.Errorf(codes.Unauthenticated, fmt.Sprintf(errUnauthenticatedTemplate, err))
 	}
 
 	r, err := rs.recordStorage.Get(ctx, uid, request.GetId())
 	if err != nil {
-		er := fmt.Sprintf("an occured error while retrieving record from storage, err: %v", err)
-		rr.Error = er
-		return &rr, status.Errorf(codes.NotFound, er)
+		if errors.Is(err, models.ErrRecordNotFound) {
+			return &rr, status.Errorf(codes.NotFound, models.ErrRecordNotFound.Error())
+		}
+		return &rr, status.Errorf(codes.Internal,
+			fmt.Sprintf("an occured error while retrieving record from storage, err: %v", err))
 	}
 
 	record, err := convRecordToProtobuff(r)
 	if err != nil {
-		er := fmt.Sprintf("an occured error while decode record from request, err: %v", err)
-		rr.Error = er
-		return &rr, status.Errorf(codes.Internal, er)
+		return &rr, status.Errorf(codes.Internal,
+			fmt.Sprintf("an occured error while decode record from request, err: %v", err))
 	}
-
-	// TODO add decrypt d
 
 	rr.Record = record
 
@@ -68,37 +66,34 @@ func (rs *RecordsService) Add(ctx context.Context, request *AddRecordRequest) (*
 
 	uid, err := getUserIDFromContext(ctx)
 	if err != nil {
-		er := fmt.Sprintf(errUnauthenticatedTemplate, err)
-		rr.Error = er
-		return &rr, status.Errorf(codes.Unauthenticated, er)
+		return &rr, status.Errorf(codes.Unauthenticated, fmt.Sprintf(errUnauthenticatedTemplate, err))
 	}
 
 	d, err := convDataRecordFromProtobuff(request.Record.Data)
 	if err != nil {
-		er := fmt.Sprintf("an error occurred while retrieving a record data from request, err: %v", err)
-		rr.Error = er
-		return &rr, status.Errorf(codes.Internal, er)
+		return &rr, status.Errorf(codes.Internal,
+			fmt.Sprintf("an error occurred while retrieving a record data from request, err: %v", err))
 	}
-
-	// TODO add encrypt b
 
 	rdto, err := models.NewRecordDTO(
 		request.Record.GetDescription(),
 		convDataTypeFromProtobuff(request.Record.GetType()),
 		d,
-		convFromPBMetainfo(request.Record.Metainfo),
+		convMetadataFromProtobuff(request.Record.Metadata),
 	)
 	if err != nil {
-		er := fmt.Sprintf("an error occurred while encode record dto from request, err: %v", err)
-		rr.Error = er
-		return &rr, status.Errorf(codes.Internal, er)
+		return &rr, status.Errorf(codes.Internal,
+			fmt.Sprintf("an error occurred while encode record dto from request, err: %v", err))
+	}
+
+	if len(rdto.Data) > models.MaxFileSize {
+		return &rr, status.Errorf(codes.Internal, models.ErrLargeFile)
 	}
 
 	r, err := rs.recordStorage.Add(ctx, uid, rdto)
 	if err != nil {
-		er := fmt.Sprintf("an error occurred while add record in storage, err: %v", err)
-		rr.Error = er
-		return &rr, status.Errorf(codes.Internal, er)
+		return &rr, status.Errorf(codes.Internal,
+			fmt.Sprintf("an error occurred while add record in storage, err: %v", err))
 	}
 
 	rr.Id = r.ID
@@ -110,27 +105,21 @@ func (rs *RecordsService) Update(ctx context.Context, request *UpdateRecordReque
 
 	uid, err := getUserIDFromContext(ctx)
 	if err != nil {
-		er := fmt.Sprintf(errUnauthenticatedTemplate, err)
-		rr.Error = er
-		return &rr, status.Errorf(codes.Unauthenticated, er)
+		return &rr, status.Errorf(codes.Unauthenticated, fmt.Sprintf(errUnauthenticatedTemplate, err))
 	}
 
-	r, err := convFromProtobuffToRecord(request.Record)
+	r, err := convRecordFromProtobuff(request.Record)
 	if err != nil {
-		er := fmt.Sprintf("an error occurred while convert record from protobuff, err: %v", err)
-		rr.Error = er
-		return &rr, status.Errorf(codes.Internal, er)
+		return &rr, status.Errorf(codes.Internal,
+			fmt.Sprintf("an error occurred while convert record from protobuff, err: %v", err))
 	}
 
-	r.Metainfo = convFromPBMetainfo(request.Record.Metainfo)
-
-	// TODO add encrypt r.Data bytes
+	r.Metadata = convMetadataFromProtobuff(request.Record.Metadata)
 
 	_, err = rs.recordStorage.Update(ctx, uid, r)
 	if err != nil {
-		er := fmt.Sprintf("an error occurred while update record in storage, err: %v", err)
-		rr.Error = er
-		return &rr, status.Errorf(codes.Internal, er)
+		return &rr, status.Errorf(codes.Internal,
+			fmt.Sprintf("an error occurred while update record in storage, err: %v", err))
 	}
 
 	rr.Id = r.ID
@@ -141,23 +130,46 @@ func (rs *RecordsService) Delete(ctx context.Context, request *DeleteRecordReque
 	var rr DeleteRecordResponse
 	uid, err := getUserIDFromContext(ctx)
 	if err != nil {
-		er := fmt.Sprintf(errUnauthenticatedTemplate, err)
-		rr.Error = er
-		return &rr, status.Errorf(codes.Unauthenticated, er)
+		return &rr, status.Errorf(codes.Unauthenticated, fmt.Sprintf(errUnauthenticatedTemplate, err))
 	}
 
 	recordID := request.GetId()
 
 	if err := rs.recordStorage.Delete(ctx, uid, recordID); err != nil {
-		er := fmt.Sprintf("an error occurred while add or delete record from storage, err: %v", err)
-		rr.Error = er
-		return &rr, status.Errorf(codes.Internal, er)
+		return &rr, status.Errorf(codes.Internal,
+			fmt.Sprintf("an error occurred while add or delete record from storage, err: %v", err))
 	}
 
 	return &rr, nil
 }
 
-func convDataRecordFromProtobuff(rData isRecord_Data) (models.Byter, error) {
+func (rs *RecordsService) List(ctx context.Context, request *ListRecordRequest) (*ListRecordResponse, error) {
+	var lr ListRecordResponse
+
+	uid, err := getUserIDFromContext(ctx)
+	if err != nil {
+		return &lr, status.Errorf(codes.Unauthenticated, fmt.Sprintf(errUnauthenticatedTemplate, err))
+	}
+
+	rcs, err := rs.recordStorage.List(ctx, uid, int(request.Offset), int(request.Limit))
+	if err != nil {
+		return &lr, status.Errorf(codes.Internal,
+			fmt.Sprintf("an occured error while retrieving record list from storage, err: %v", err))
+	}
+
+	for _, r := range rcs {
+		rc, err := convRecordToProtobuff(r)
+		if err != nil {
+			return &lr, status.Errorf(codes.Internal,
+				fmt.Sprintf("an occured error while decode record list from request, err: %v", err))
+		}
+		lr.Records = append(lr.Records, rc)
+	}
+
+	return &lr, nil
+}
+
+func convDataRecordFromProtobuff(rData isRecord_Data) (models.RecordData, error) {
 	switch d := rData.(type) {
 	case *Record_Auth:
 		return &models.Auth{
@@ -187,7 +199,7 @@ func convDataRecordToProtobuff(r *models.Record) (isRecord_Data, error) {
 	switch r.Type {
 	case string(models.AuthType):
 		auth := &models.Auth{}
-		if err := auth.FromByte(r.Data); err != nil {
+		if err := cbor.Unmarshal(r.Data, auth); err != nil {
 			return nil, fmt.Errorf("an error occured while encode auth from data, err: %w", err)
 		}
 
@@ -198,7 +210,7 @@ func convDataRecordToProtobuff(r *models.Record) (isRecord_Data, error) {
 		return &Record_Auth{Auth: a}, nil
 	case string(models.TextType):
 		text := &models.Text{}
-		if err := text.FromByte(r.Data); err != nil {
+		if err := cbor.Unmarshal(r.Data, text); err != nil {
 			return nil, fmt.Errorf("an error occured while encode text from data, err: %w", err)
 		}
 
@@ -208,7 +220,7 @@ func convDataRecordToProtobuff(r *models.Record) (isRecord_Data, error) {
 		return &Record_Text{Text: t}, nil
 	case string(models.BinaryType):
 		bin := &models.Binary{}
-		if err := bin.FromByte(r.Data); err != nil {
+		if err := cbor.Unmarshal(r.Data, bin); err != nil {
 			return nil, fmt.Errorf("an error occured while encode binary from data, err: %w", err)
 		}
 
@@ -218,7 +230,7 @@ func convDataRecordToProtobuff(r *models.Record) (isRecord_Data, error) {
 		return &Record_Binary{Binary: b}, nil
 	case string(models.CardType):
 		card := &models.Card{}
-		if err := card.FromByte(r.Data); err != nil {
+		if err := cbor.Unmarshal(r.Data, card); err != nil {
 			return nil, fmt.Errorf("an error occured while encode card from data, err: %w", err)
 		}
 
@@ -233,15 +245,15 @@ func convDataRecordToProtobuff(r *models.Record) (isRecord_Data, error) {
 	}
 }
 
-func convFromProtobuffToRecord(r *Record) (*models.Record, error) {
+func convRecordFromProtobuff(r *Record) (*models.Record, error) {
 	d, err := convDataRecordFromProtobuff(r.Data)
 	if err != nil {
 		return nil, fmt.Errorf("an error occured while decode record from protobuff, err: %w", err)
 	}
 
-	b, err := d.ToByte()
+	b, err := d.BinData()
 	if err != nil {
-		return nil, fmt.Errorf("an error occured while encode record to bytes, err: %w", err)
+		return nil, fmt.Errorf("an error occured while encode data record to bytes, err: %w", err)
 	}
 
 	return &models.Record{
@@ -251,7 +263,8 @@ func convFromProtobuffToRecord(r *Record) (*models.Record, error) {
 		Type:        r.GetType().String(),
 		Data:        b,
 		Hashsum:     r.GetHashsum(),
-		Metainfo:    convFromPBMetainfo(r.GetMetainfo()),
+		Metadata:    convMetadataFromProtobuff(r.GetMetadata()),
+		Version:     r.Version,
 	}, nil
 }
 
@@ -300,14 +313,15 @@ func convRecordToProtobuff(r *models.Record) (*Record, error) {
 		Modified:    timestamppb.New(r.Modified),
 		Data:        data,
 		Hashsum:     r.Hashsum,
-		Metainfo:    convMetainfoToProtobuff(r.Metainfo),
+		Metadata:    convMetadataToProtobuff(r.Metadata),
+		Version:     r.Version,
 	}, nil
 }
 
-func convFromPBMetainfo(m []*Metainfo) []*models.Metainfo {
-	mi := make([]*models.Metainfo, len(m))
+func convMetadataFromProtobuff(m []*Metadata) []*models.Metadata {
+	mi := make([]*models.Metadata, len(m))
 	for i := 0; i < len(m); i++ {
-		mi[i] = &models.Metainfo{
+		mi[i] = &models.Metadata{
 			Key:   m[i].Key,
 			Value: m[i].Value,
 		}
@@ -315,10 +329,10 @@ func convFromPBMetainfo(m []*Metainfo) []*models.Metainfo {
 	return mi
 }
 
-func convMetainfoToProtobuff(m []*models.Metainfo) []*Metainfo {
-	mi := make([]*Metainfo, len(m))
+func convMetadataToProtobuff(m []*models.Metadata) []*Metadata {
+	mi := make([]*Metadata, len(m))
 	for i := 0; i < len(m); i++ {
-		mi[i] = &Metainfo{
+		mi[i] = &Metadata{
 			Key:   m[i].Key,
 			Value: m[i].Value,
 		}

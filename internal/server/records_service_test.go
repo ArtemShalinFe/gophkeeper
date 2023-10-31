@@ -61,7 +61,7 @@ func contextWithUserID(ctx context.Context, userID string) context.Context {
 	return metadata.NewOutgoingContext(ctx, metadata.New(headers))
 }
 
-func generateMetainfo(mic int) []string {
+func generateMetadata(mic int) []string {
 	ss := make([]string, mic)
 	for i := 0; i < mic; i++ {
 		ss[i] = fmt.Sprintf("%s:%s", uuid.NewString(), uuid.NewString())
@@ -69,13 +69,13 @@ func generateMetainfo(mic int) []string {
 	return ss
 }
 
-func generateRecord(t *testing.T, dt models.DataType, a models.Byter) *models.Record {
+func generateRecord(t *testing.T, dt models.DataType, a models.RecordData) *models.Record {
 	t.Helper()
 
 	mic := 10
-	mis, err := models.NewMetainfoFromStringArray(generateMetainfo(mic))
+	mis, err := models.NewMetadataFromStringArray(generateMetadata(mic))
 	if err != nil {
-		t.Errorf("an error occured while generating metainfo, err: %v", err)
+		t.Errorf("an error occured while generating metadata, err: %v", err)
 	}
 
 	r, err := models.NewRecord(uuid.NewString(), uuid.NewString(), dt,
@@ -118,7 +118,7 @@ func TestRecordsService_Get(t *testing.T) {
 
 	us := NewMockUserStorage(ctrl)
 	udto := userDTO()
-	u := user()
+	u := user(t)
 	us.EXPECT().GetUser(gomock.Any(), udto).AnyTimes().Return(u, nil)
 
 	rs := NewMockRecordStorage(ctrl)
@@ -262,7 +262,7 @@ func TestRecordsService_Get(t *testing.T) {
 				rctx = contextWithUserID(context.Background(), tt.userid)
 			}
 			got, err := client.Get(rctx, tt.request)
-			if (got.Error != "") != tt.wantErr {
+			if (err != nil) != tt.wantErr {
 				t.Errorf("RecordsService.Get() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -278,7 +278,7 @@ func TestRecordsService_Add(t *testing.T) {
 
 	us := NewMockUserStorage(ctrl)
 	udto := userDTO()
-	u := user()
+	u := user(t)
 	us.EXPECT().GetUser(gomock.Any(), udto).AnyTimes().Return(u, nil)
 
 	rs := NewMockRecordStorage(ctrl)
@@ -422,7 +422,7 @@ func TestRecordsService_Add(t *testing.T) {
 				rctx = contextWithUserID(context.Background(), tt.userid)
 			}
 			got, err := client.Add(rctx, tt.request)
-			if (got.Error != "") != tt.wantErr {
+			if (err != nil) != tt.wantErr {
 				t.Errorf("RecordsService.Add() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -438,7 +438,7 @@ func TestRecordsService_Update(t *testing.T) {
 
 	us := NewMockUserStorage(ctrl)
 	udto := userDTO()
-	u := user()
+	u := user(t)
 	us.EXPECT().GetUser(gomock.Any(), udto).AnyTimes().Return(u, nil)
 
 	rs := NewMockRecordStorage(ctrl)
@@ -582,7 +582,7 @@ func TestRecordsService_Update(t *testing.T) {
 				rctx = contextWithUserID(context.Background(), tt.userid)
 			}
 			got, err := client.Update(rctx, tt.request)
-			if (got.Error != "") != tt.wantErr {
+			if (err != nil) != tt.wantErr {
 				t.Errorf("RecordsService.Update() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -598,7 +598,7 @@ func TestRecordsService_Delete(t *testing.T) {
 
 	us := NewMockUserStorage(ctrl)
 	udto := userDTO()
-	u := user()
+	u := user(t)
 	us.EXPECT().GetUser(gomock.Any(), udto).AnyTimes().Return(u, nil)
 
 	rs := NewMockRecordStorage(ctrl)
@@ -700,8 +700,8 @@ func TestRecordsService_Delete(t *testing.T) {
 			if tt.userid != "" {
 				rctx = contextWithUserID(context.Background(), tt.userid)
 			}
-			got, err := client.Delete(rctx, tt.request)
-			if (got.Error != "") != tt.wantErr {
+			_, err = client.Delete(rctx, tt.request)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("RecordsService.Delete() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}

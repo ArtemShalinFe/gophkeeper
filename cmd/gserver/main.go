@@ -18,6 +18,10 @@ import (
 	"github.com/ArtemShalinFe/gophkeeper/internal/storage/sql"
 )
 
+const timeoutShutdown = time.Second * 30
+const timeoutServerShutdown = time.Second * 10
+const componentsCount = 3
+
 func main() {
 	if err := run(); err != nil {
 		log.Fatalf("an occured fatal error, err: %v", err)
@@ -28,26 +32,31 @@ func run() error {
 	ctx, cancelCtx := signal.NotifyContext(context.Background(),
 		os.Interrupt,
 		os.Kill,
-		syscall.SIGQUIT)
+		syscall.SIGQUIT,
+	)
 
 	defer cancelCtx()
-
-	componentsErrs := make(chan error, 1)
-	go func() {
-		select {
-		case <-ctx.Done():
-		case err := <-componentsErrs:
-			zap.L().Error("an unexpected error occurred in one of the application components", zap.Error(err))
-			cancelCtx()
-		}
-	}()
-
-	wg := &sync.WaitGroup{}
 
 	log, err := zap.NewProduction()
 	if err != nil {
 		return fmt.Errorf("an error occured while init logger err: %w ", err)
 	}
+
+	componentsErrs := make(chan error, componentsCount)
+	go func(log *zap.Logger) {
+		select {
+		case <-ctx.Done():
+		case err := <-componentsErrs:
+			errTml := "an unexpected error occurred in one of the application components"
+			log.Error(errTml, zap.Error(err))
+			cancelCtx()
+			for err := range componentsErrs {
+				log.Error(errTml, zap.Error(err))
+			}
+		}
+	}(log)
+
+	wg := &sync.WaitGroup{}
 
 	wg.Add(1)
 	go func(log *zap.Logger, errs chan<- error) {
@@ -67,6 +76,8 @@ func run() error {
 		return fmt.Errorf("an error occured when reading environment for server config, err: %w", err)
 	}
 
+	log.Info("server will be running", zap.String("Addr", cfg.Addr))
+
 	db, err := sql.NewDB(ctx, cfg.DSN, log)
 	if err != nil {
 		return fmt.Errorf("an error occured when init db, err: %w", err)
@@ -81,6 +92,8 @@ func run() error {
 		db.Close()
 	}()
 
+	log.Info("database is connected")
+
 	gkServer, err := server.InitServer(db, db, log, cfg)
 	if err != nil {
 		componentsErrs <- fmt.Errorf("an occured error when init server, err: %w", err)
@@ -91,32 +104,36 @@ func run() error {
 		}
 	}(gkServer, componentsErrs)
 
+	log.Info("server is running")
+
 	wg.Add(1)
-	go func(srv *server.GKServer, errs chan<- error) {
+	go func(srv *server.GKServer) {
 		defer log.Error("server has been shutdown")
 		defer wg.Done()
 		<-ctx.Done()
 
-		const timeoutServerShutdown = time.Second * 10
-
 		shutdownTimeoutCtx, cancelShutdownTimeoutCtx := context.WithTimeout(context.Background(), timeoutServerShutdown)
 		defer cancelShutdownTimeoutCtx()
-		if err := srv.Shutdown(shutdownTimeoutCtx); err != nil {
-			errs <- fmt.Errorf("an error occurred during server shutdown: %w", err)
-		}
-	}(gkServer, componentsErrs)
+		srv.Shutdown(shutdownTimeoutCtx)
+	}(gkServer)
 
 	defer func() {
 		wg.Wait()
 	}()
 
+	select {
+	case <-ctx.Done():
+	case err := <-componentsErrs:
+		log.Error(err.Error())
+		cancelCtx()
+	}
+
 	go func() {
-		const timeoutShutdown = time.Second * 30
 		ctx, cancelCtx := context.WithTimeout(context.Background(), timeoutShutdown)
 		defer cancelCtx()
 
 		<-ctx.Done()
-		log.Fatal("failed to gracefully shutdown the service")
+		log.Error("failed to gracefully shutdown the service")
 	}()
 	return nil
 }

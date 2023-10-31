@@ -4,11 +4,6 @@ ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 .PHONY: all
 all: ;
 
-# BUILD-AGENT
-.PHONY: build-gagent
-build-gagent:
-	go build -C ./cmd/gagent -o $(shell pwd)/cmd/gagent/gagent
-
 # BUILD-CLIENT
 .PHONY: build-gclient
 build-gclient:
@@ -22,7 +17,6 @@ build-gserver:
 # BUILD
 .PHONY: build
 build:
-	make build-gagent
 	make build-gclient
 	make build-gserver
 
@@ -71,7 +65,9 @@ clean-data:
 mocks: protoc
 	mockgen -source=internal/models/users.go -destination=internal/server/mock_users_service.go -package server
 	mockgen -source=internal/models/records.go -destination=internal/server/mock_records_service.go -package server
-
+	mockgen -source=internal/models/users.go -destination=internal/agent/mock_user_storage.go -package agent
+	mockgen -source=internal/models/records.go -destination=internal/agent/mock_records_storage.go -package agent
+	
 # PROTOBUF
 .PHONY: protoc
 protoc:

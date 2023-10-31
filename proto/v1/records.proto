@@ -87,12 +87,12 @@ message Record {
     Card card = 12;
   }
 
-  // Metainfo - for storing arbitrary textual meta-information
+  // Metadata - for storing arbitrary textual meta-information
   // (data belonging to a website, an individual or a bank, lists of one-time activation codes, etc.).
-  repeated Metainfo metainfo = 13;
+  repeated Metadata metadata = 13;
 
   // file version
-  string version = 14;
+  int64 version = 14;
 }
 
 // AddRecordRequest - used to add a record.
@@ -105,7 +105,6 @@ message AddRecordRequest {
 // AddRecordResponse - returns the record ID, or an error if something went wrong.
 message AddRecordResponse {
   string id = 1; 
-  string error = 2;
 }
 
 // AddUpdateRecordRequest - used to update a record.
@@ -118,7 +117,6 @@ message UpdateRecordRequest {
 // AddUpdateRecordResponse - returns the record ID, or an error if something went wrong.
 message UpdateRecordResponse {
   string id = 1; 
-  string error = 2;
 }
 
 // GetRecordRequest - used to retrieving record.
@@ -130,18 +128,18 @@ message GetRecordRequest {
 // AddUpdateRecordResponse - returns the record, or an error if something went wrong.
 message GetRecordResponse {
   Record record = 1;
-  string error = 2;
 }
 
 // ListRecordRequest - used to retrieving user records.
 // The user ID is passed in the request headers.
 message ListRecordRequest {
+  int32 offset = 1;
+  int32 limit = 2;
 }
 
 // ListRecordResponse - returns the records, or an error if something went wrong.
 message ListRecordResponse {
   repeated Record records = 1;
-  string error = 2;
 }
 
 // AddUpdateRecordResponse - returns the record id, or an error if something went wrong.
@@ -152,12 +150,11 @@ message DeleteRecordRequest {
 
 // DeleteRecordResponse - returns an error if something went wrong.
 message DeleteRecordResponse {
-  string error = 1;
 }
   
   // The key is a value for arbitrary textual meta-information 
   // (whether the data belongs to a website, an individual or a bank, lists of one-time activation codes, etc.)
-message Metainfo {
+message Metadata {
   string key = 1;
   string value = 2;
 }

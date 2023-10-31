@@ -7,5 +7,11 @@ RUN CGO_ENABLED=0 go build -C ./cmd/gserver -o /gserver
 FROM gcr.io/distroless/base-debian11
 WORKDIR /
 COPY --from=build-stage /gserver /gserver
+
+ENV GKS_ADDRESS=localhost:${GKSERVER_PORT}
+ENV DATABASE_DSN=${DATABASE_DSN}
+
+EXPOSE ${GKSERVER_PORT}
+
 USER nonroot:nonroot
 ENTRYPOINT ["/gserver"]

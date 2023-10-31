@@ -1,10 +1,7 @@
 package server
 
 import (
-	"bytes"
 	"context"
-	"encoding/binary"
-	"encoding/gob"
 	"fmt"
 	"net"
 	"time"
@@ -74,33 +71,18 @@ func (s *GKServer) requestLogger() grpc.UnaryServerInterceptor {
 		duration := time.Since(start)
 		if err != nil {
 			s.log.Error("an error occurred while processing RPC request", zap.Error(err))
+			return nil, fmt.Errorf("an error occured while handle request, err: %w", err)
 		} else {
 			md, _ := metadata.FromIncomingContext(ctx)
-			size, err := responseSize(resp)
-			if err != nil {
-				s.log.Error("an error occurred while calculate response size", zap.Error(err))
-			}
 			s.log.Info("incomming request",
 				zap.String("RPC method", info.FullMethod),
 				zap.Any("headers", md),
 				zap.Duration("duration", duration),
 				zap.Any("body", req),
-				zap.Int("size", size),
 			)
 		}
 		return resp, nil
 	}
-}
-
-func responseSize(val any) (int, error) {
-	var buff bytes.Buffer
-	enc := gob.NewEncoder(&buff)
-	err := enc.Encode(val)
-	if err != nil {
-		return 0, fmt.Errorf("an occured error when convert val to bytes, err: %w", err)
-	}
-	b := buff.Bytes()
-	return binary.Size(b), nil
 }
 
 func (s *GKServer) Serve(lis net.Listener) error {
@@ -126,7 +108,6 @@ func (s *GKServer) ListenAndServe() error {
 	return nil
 }
 
-func (s *GKServer) Shutdown(ctx context.Context) error {
+func (s *GKServer) Shutdown(ctx context.Context) {
 	s.grpcServer.GracefulStop()
-	return nil
 }

@@ -9,7 +9,7 @@ services:
       PGDATA: "/var/lib/postgresql/data"
     volumes:
       - ./db/init:/docker-entrypoint-initdb.d
-      - /tmp/gophkeeper/db/data:/var/lib/postgresql/data      
+      - ./db/data:/var/lib/postgresql/data      
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_PASSWORD}"]
       interval: 10s
@@ -23,31 +23,18 @@ services:
         context: ./..
         dockerfile: deployments/gserver/Dockerfile
       ports:
-        - ${GKS_ADDRESS}:${GKS_ADDRESS}
+        - ${GKSERVER_PORT}:${GKSERVER_PORT}
       depends_on:
         - postgres
       environment:
-        - GKS_ADDRESS=${GKS_ADDRESS}
-        - DATABASE_DSN='postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/gophkeeper?sslmode=disable'
-      restart: always
-
-  gagent:
-      build:
-        context: ./..
-        dockerfile: deployments/gagent/Dockerfile
-      ports:
-        - ${GKA_ADDRESS}:${GKA_ADDRESS}
-      depends_on:
-        - gserver
-      environment:
-        - GKA_ADDRESS=${GKA_ADDRESS}
-        - GKS_ADDRESS=${GKS_ADDRESS}
+        - GKS_ADDRESS=localhost:${GKSERVER_PORT}
+        - DATABASE_DSN=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/gophkeeper?sslmode=disable
       restart: always
   
-  gclient:
-      build:
-        context: ./..
-        dockerfile: deployments/gagent/Dockerfile
-      depends_on:
-        - gagent
-      restart: always
+  # gclient:
+  #     build:
+  #       context: ./..
+  #       dockerfile: deployments/gagent/Dockerfile
+  #     depends_on:
+  #       - gagent
+  #     restart: always

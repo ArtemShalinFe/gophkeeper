@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/ArtemShalinFe/gophkeeper/internal/config"
@@ -57,15 +58,22 @@ func NewUserServiceDialer(t *testing.T, us models.UserStorage) (*userDialer, err
 func userDTO() *models.UserDTO {
 	return &models.UserDTO{
 		Login:    gophkeeper,
-		Password: gophkeeper,
+		Password: strings.Repeat(gophkeeper, 2),
 	}
 }
 
-func user() *models.User {
+func user(t *testing.T) *models.User {
+	t.Helper()
+
+	hp, err := hashPassword(strings.Repeat(gophkeeper, 2))
+	if err != nil {
+		t.Error(err)
+	}
+
 	return &models.User{
 		ID:           randomUUID,
 		Login:        gophkeeper,
-		PasswordHash: gophkeeper,
+		PasswordHash: hp,
 	}
 }
 
@@ -74,9 +82,9 @@ func TestUsersService_Register(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	stg := NewMockUserStorage(ctrl)
-	stg.EXPECT().AddUser(gomock.Any(), userDTO()).Return(user(), nil)
-	stg.EXPECT().AddUser(gomock.Any(), userDTO()).Return(nil, models.ErrLoginIsBusy)
-	stg.EXPECT().AddUser(gomock.Any(), userDTO()).Return(nil, errSomethingWentWrong)
+	stg.EXPECT().AddUser(gomock.Any(), gomock.Any()).Return(user(t), nil)
+	stg.EXPECT().AddUser(gomock.Any(), gomock.Any()).Return(nil, models.ErrLoginIsBusy)
+	stg.EXPECT().AddUser(gomock.Any(), gomock.Any()).Return(nil, errSomethingWentWrong)
 
 	d, err := NewUserServiceDialer(t, stg)
 	if err != nil {
@@ -144,7 +152,7 @@ func TestUsersService_Register(t *testing.T) {
 			client := NewUsersClient(conn)
 
 			got, err := client.Register(ctx, tt.request)
-			if (got.Error != "") != tt.wantErr {
+			if (err != nil) != tt.wantErr {
 				t.Errorf("UsersService.Register() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
@@ -160,9 +168,9 @@ func TestUsersService_Login(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	stg := NewMockUserStorage(ctrl)
-	stg.EXPECT().GetUser(gomock.Any(), userDTO()).Return(user(), nil)
-	stg.EXPECT().GetUser(gomock.Any(), userDTO()).Return(nil, models.ErrLoginIsBusy)
-	stg.EXPECT().GetUser(gomock.Any(), userDTO()).Return(nil, errSomethingWentWrong)
+	stg.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(user(t), nil)
+	stg.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, models.ErrLoginIsBusy)
+	stg.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, errSomethingWentWrong)
 
 	d, err := NewUserServiceDialer(t, stg)
 	if err != nil {
@@ -230,7 +238,7 @@ func TestUsersService_Login(t *testing.T) {
 			client := NewUsersClient(conn)
 
 			got, err := client.Login(ctx, tt.request)
-			if (got.Error != "") != tt.wantErr {
+			if (err != nil) != tt.wantErr {
 				t.Errorf("UsersService.Login() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}

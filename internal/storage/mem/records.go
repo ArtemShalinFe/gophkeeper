@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (ms *MemStorage) List(ctx context.Context, userID string) ([]*models.Record, error) {
+func (ms *MemStorage) List(ctx context.Context, userID string, offset int, limit int) ([]*models.Record, error) {
 	ms.mutex.RLock()
 	defer ms.mutex.RUnlock()
 
@@ -20,11 +20,19 @@ func (ms *MemStorage) List(ctx context.Context, userID string) ([]*models.Record
 	us.mutex.RLock()
 	defer us.mutex.RUnlock()
 
-	rs := make([]*models.Record, len(us.data))
+	var rs []*models.Record //nolint // Number of records depends on offset and limit and may be less than in the cache
 	i := 0
 	for _, r := range us.data {
-		rs[i] = r
+		if i < offset {
+			i++
+			continue
+		}
+		rs = append(rs, r)
 		i++
+
+		if len(rs) == limit {
+			break
+		}
 	}
 
 	return rs, nil
@@ -74,7 +82,7 @@ func (ms *MemStorage) Add(ctx context.Context, userID string, record *models.Rec
 		Modified:    now,
 		Data:        record.Data,
 		Hashsum:     record.Hashsum,
-		Metainfo:    record.Metainfo,
+		Metadata:    record.Metadata,
 		Version:     1,
 	}
 
@@ -96,6 +104,7 @@ func (ms *MemStorage) Update(ctx context.Context, userID string, record *models.
 	defer us.mutex.Unlock()
 
 	record.Modified = time.Now()
+
 	us.data[record.ID] = record
 
 	return record, nil

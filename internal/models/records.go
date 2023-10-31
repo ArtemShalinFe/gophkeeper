@@ -8,32 +8,44 @@ import (
 	"fmt"
 	"io"
 	"time"
+
+	"github.com/fxamacker/cbor/v2"
 )
 
-var MaxFileSize = 20 * 1024 * 1024
+var MaxFileSize = 40 * 1024 * 1024 // 40 Mb
+var ErrLargeFile = fmt.Sprintf("the file size should not exceed %d bytes", MaxFileSize)
 
+var ErrEmptyID = errors.New("field ID cannot be empty")
 var ErrRecordNotFound = errors.New("record not found")
 var ErrUserStorageNotFound = errors.New("user cache not found")
+
+type RecordStorage interface {
+	List(ctx context.Context, userID string, offset int, limit int) ([]*Record, error)
+	Get(ctx context.Context, userID string, recordID string) (*Record, error)
+	Delete(ctx context.Context, userID string, recordID string) error
+	Add(ctx context.Context, userID string, record *RecordDTO) (*Record, error)
+	Update(ctx context.Context, userID string, record *Record) (*Record, error)
+}
 
 type DataType string
 
 const (
-	AuthType   DataType = "auth"
-	TextType   DataType = "text"
-	BinaryType DataType = "binary"
-	CardType   DataType = "card"
+	AuthType   DataType = "AUTH"
+	TextType   DataType = "TEXT"
+	BinaryType DataType = "BINARY"
+	CardType   DataType = "CARD"
 )
 
 type RecordDTO struct {
-	Description string      `json:"description"`
-	Type        string      `json:"type"`
-	Data        []byte      `json:"data"`
-	Hashsum     string      `json:"hashsum"`
-	Metainfo    []*Metainfo `json:"metainfo"`
+	Description string      `cbor:"description"`
+	Type        string      `cbor:"type"`
+	Data        []byte      `cbor:"data"`
+	Hashsum     string      `cbor:"hashsum"`
+	Metadata    []*Metadata `cbor:"metadata"`
 }
 
-func NewRecordDTO(description string, dataType DataType, data Byter, metainfo []*Metainfo) (*RecordDTO, error) {
-	b, err := data.ToByte()
+func NewRecordDTO(description string, dataType DataType, data RecordData, metadata []*Metadata) (*RecordDTO, error) {
+	b, err := cbor.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("an error occured while converted data record dto to bytes, err: %w", err)
 	}
@@ -47,22 +59,22 @@ func NewRecordDTO(description string, dataType DataType, data Byter, metainfo []
 		Type:        string(dataType),
 		Data:        b,
 		Hashsum:     hs,
-		Metainfo:    metainfo,
+		Metadata:    metadata,
 	}, nil
 }
 
 type Record struct {
-	ID          string      `json:"uuid"`
-	Owner       string      `json:"user"`
-	Description string      `json:"description"`
-	Type        string      `json:"type"`
-	Created     time.Time   `json:"created"`
-	Modified    time.Time   `json:"modified"`
-	Data        []byte      `json:"data"`
-	Hashsum     string      `json:"hashsum"`
-	Metainfo    []*Metainfo `json:"metainfo"`
-	Deleted     bool        `json:"deleted"`
-	Version     int         `json:"version"`
+	ID          string      `cbor:"uuid"`
+	Owner       string      `cbor:"user"`
+	Description string      `cbor:"description"`
+	Type        string      `cbor:"type"`
+	Created     time.Time   `cbor:"created"`
+	Modified    time.Time   `cbor:"modified"`
+	Data        []byte      `cbor:"data"`
+	Hashsum     string      `cbor:"hashsum"`
+	Metadata    []*Metadata `cbor:"metadata"`
+	Deleted     bool        `cbor:"deleted"`
+	Version     int64       `cbor:"version"`
 }
 
 func NewRecord(id string,
@@ -70,11 +82,11 @@ func NewRecord(id string,
 	dataType DataType,
 	created time.Time,
 	modified time.Time,
-	data Byter,
-	metainfo []*Metainfo,
+	data RecordData,
+	metadata []*Metadata,
 	deleted bool,
-	version int) (*Record, error) {
-	b, err := data.ToByte()
+	version int64) (*Record, error) {
+	b, err := cbor.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("an error occured while converted data record to bytes, err: %w", err)
 	}
@@ -91,27 +103,18 @@ func NewRecord(id string,
 		Modified:    modified,
 		Data:        b,
 		Hashsum:     hs,
-		Metainfo:    metainfo,
+		Metadata:    metadata,
 		Deleted:     deleted,
 		Version:     version,
 	}, nil
 }
 
-func RecordStringHeader() string {
-	return "ID\tDESCRIPTION\tTYPE\tCREATED\tMODIFIED\tHASHSUM\tDELETED\tVERSION"
+func (r *Record) GetVesrion() int64 {
+	return r.Version
 }
 
-func (r *Record) String() string {
-	return fmt.Sprintf("%s\t%s\t%s\t%v\t%v\t%s\t%v\t%d",
-		r.ID, r.Description, r.Type, r.Created, r.Modified, r.Hashsum, r.Deleted, r.Version)
-}
-
-type RecordStorage interface {
-	List(ctx context.Context, userID string) ([]*Record, error)
-	Get(ctx context.Context, userID string, recordID string) (*Record, error)
-	Delete(ctx context.Context, userID string, recordID string) error
-	Add(ctx context.Context, userID string, record *RecordDTO) (*Record, error)
-	Update(ctx context.Context, userID string, record *Record) (*Record, error)
+func (r *Record) GetHashsum() string {
+	return r.Hashsum
 }
 
 func hashsum(b []byte) (string, error) {

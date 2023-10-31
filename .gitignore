@@ -12,9 +12,8 @@
 *.test
 
 # Binaries
-cmd/agent/agent
-cmd/client/client
-cmd/server/server
+cmd/client/gclient
+cmd/server/gserver
 
 .DS_Store
 *debug_bin
@@ -22,6 +21,8 @@ cmd/server/server
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+# coverage test
+coverage.html
 
 # Dependency directories (remove the comment below to include it)
 vendor/
@@ -39,9 +40,7 @@ deployments/db/data
 # lint
 golangci-lint/*
 
-# coverage test
-coverage.html
-
 # certs
+keys
 *.pem
 *.key
