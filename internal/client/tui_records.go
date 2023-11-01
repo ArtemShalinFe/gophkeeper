@@ -97,7 +97,7 @@ func (ui *TUI) displayRecords(ctx context.Context, offset int, limit int) {
 		table.SetCell(rn, colModified, addTableHeaderCell(record.Modified.Format(fnDateFormat)))
 		table.SetCell(rn, colType, addTableHeaderCell(record.Type))
 		table.SetCell(rn, colHash, addTableHeaderCell(record.Hashsum))
-		table.SetCell(rn, colVersion, addTableHeaderCell(strconv.FormatInt(record.GetVesrion(), 10)))
+		table.SetCell(rn, colVersion, addTableHeaderCell(strconv.FormatInt(record.GetVersion(), 10)))
 
 		if rn >= curOst+ui.recLimit {
 			break

@@ -1,7 +1,7 @@
 package vectors
 
 type Vector interface {
-	GetVesrion() int64
+	GetVersion() int64
 	GetHashsum() string
 }
 
@@ -25,15 +25,15 @@ func NewComparison(vectorA Vector, vectorB Vector) *Comparison {
 }
 
 func (c *Comparison) Compare() string {
-	if c.VectorA.GetVesrion() > c.VectorB.GetVesrion() {
+	if c.VectorA.GetVersion() > c.VectorB.GetVersion() {
 		return VectorAIsHigherVectorB
 	}
 
-	if c.VectorA.GetVesrion() < c.VectorB.GetVesrion() {
+	if c.VectorA.GetVersion() < c.VectorB.GetVersion() {
 		return VectorAIsLowerVectorB
 	}
 
-	if c.VectorA.GetVesrion() == c.VectorB.GetVesrion() && c.VectorA.GetHashsum() == c.VectorB.GetHashsum() {
+	if c.VectorA.GetVersion() == c.VectorB.GetVersion() && c.VectorA.GetHashsum() == c.VectorB.GetHashsum() {
 		return VectorAIsEqualsVectorB
 	}
 

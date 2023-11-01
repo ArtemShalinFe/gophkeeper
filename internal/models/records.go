@@ -109,7 +109,7 @@ func NewRecord(id string,
 	}, nil
 }
 
-func (r *Record) GetVesrion() int64 {
+func (r *Record) GetVersion() int64 {
 	return r.Version
 }
 
