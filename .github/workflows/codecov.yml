@@ -1,4 +1,6 @@
-name: tests and coverage
+name: Codecov
+ignore:
+  - "*.pb.go"  # ignore protobuff files
 
 on: [pull_request]
 
