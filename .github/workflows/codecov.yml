@@ -1,6 +1,4 @@
 name: Codecov
-ignore:
-  - "*.pb.go"  # ignore protobuff files
 
 on: [pull_request]
 
