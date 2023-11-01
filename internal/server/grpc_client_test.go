@@ -524,7 +524,9 @@ func TestGKClient_Add(t *testing.T) {
 	}
 	defer conn.Close()
 
-	c.setupConn(ctx)
+	if err := c.setupConn(ctx); err != nil {
+		log.Info(err.Error())
+	}
 	c.cc = conn
 
 	uuid := uuid.NewString()
