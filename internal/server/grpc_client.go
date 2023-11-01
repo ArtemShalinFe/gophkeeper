@@ -173,12 +173,13 @@ func (c *GKClient) Get(ctx context.Context, userID string, recordID string) (*mo
 	rr, err := serverStorage.Get(mctx, req)
 	if err != nil {
 		st, ok := status.FromError(err)
-		if !ok {
+		if ok {
+			if st.Code() == codes.NotFound {
+				return nil, models.ErrRecordNotFound
+			}
 			return nil, fmt.Errorf("an error occured while retrieving record, err: %w", err)
 		}
-		if st.Code() == codes.NotFound {
-			return nil, models.ErrRecordNotFound
-		}
+		return nil, fmt.Errorf("an error occured while retrieving status for record, err: %w", err)
 	}
 
 	r, err := convRecordFromProtobuff(rr.Record)
@@ -218,7 +219,7 @@ func (c *GKClient) Add(ctx context.Context, userID string, record *models.Record
 
 	mctx := metadata.NewOutgoingContext(ctx, metadata.New(headers))
 
-	id := uuid.New().String()
+	id := uuid.NewString()
 	now := time.Now()
 	r := &models.Record{
 		ID:          id,

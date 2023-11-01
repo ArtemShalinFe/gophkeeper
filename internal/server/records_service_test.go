@@ -113,6 +113,26 @@ func generateCardRecord(t *testing.T) *models.Record {
 	})
 }
 
+func generateRecords(t *testing.T, limit int) []*models.Record {
+	var records []*models.Record
+	for i := 0; i < limit; i++ {
+		switch i % 2 {
+		case 0:
+			records = append(records, generateAuthRecord(t))
+		case 1:
+			records = append(records, generateTextRecord(t))
+		case 3:
+			records = append(records, generateBinaryRecord(t))
+		default:
+			records = append(records, generateCardRecord(t))
+		}
+		if len(records) >= models.DefaultLimit {
+			break
+		}
+	}
+	return records
+}
+
 func TestRecordsService_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
@@ -703,6 +723,97 @@ func TestRecordsService_Delete(t *testing.T) {
 			_, err = client.Delete(rctx, tt.request)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RecordsService.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestRecordsService_List(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	us := NewMockUserStorage(ctrl)
+	udto := userDTO()
+	u := user(t)
+	us.EXPECT().GetUser(gomock.Any(), udto).AnyTimes().Return(u, nil)
+
+	rs := NewMockRecordStorage(ctrl)
+
+	d, err := NewRecordServiceDialer(t, us, rs)
+	if err != nil {
+		t.Errorf("an occured error when creating a new dialer, err: %v", err)
+	}
+	records := generateRecords(t, models.DefaultLimit)
+	rs.EXPECT().List(gomock.Any(), u.ID, 0, models.DefaultLimit).Return(records, nil)
+
+	records2 := generateRecords(t, 7)
+	rs.EXPECT().List(gomock.Any(), u.ID, 1, models.DefaultLimit).Return(records2, nil)
+	rs.EXPECT().List(gomock.Any(), u.ID, 2, models.DefaultLimit).Return(nil, errSomethingWentWrong)
+
+	tests := []struct {
+		name      string
+		userid    string
+		request   *ListRecordRequest
+		wantErr   bool
+		wantCount int
+	}{
+		{
+			name:   "positive case list records",
+			userid: u.ID,
+			request: &ListRecordRequest{
+				Offset: 0,
+				Limit:  models.DefaultLimit,
+			},
+			wantErr:   false,
+			wantCount: models.DefaultLimit,
+		},
+		{
+			name:   "positive case list records (not full page)",
+			userid: u.ID,
+			request: &ListRecordRequest{
+				Offset: 1,
+				Limit:  models.DefaultLimit,
+			},
+			wantErr:   false,
+			wantCount: 7,
+		},
+		{
+			name:   "positive case list records (server return error)",
+			userid: u.ID,
+			request: &ListRecordRequest{
+				Offset: 2,
+				Limit:  models.DefaultLimit,
+			},
+			wantErr:   true,
+			wantCount: 0,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			rctx := context.Background()
+
+			conn, err := grpc.DialContext(rctx, "bufnet",
+				grpc.WithContextDialer(d.bufDialer),
+				grpc.WithTransportCredentials(insecure.NewCredentials()))
+			if err != nil {
+				t.Errorf("failed to dial bufnet: %v", err)
+			}
+			defer conn.Close()
+
+			client := NewRecordsClient(conn)
+
+			if tt.userid != "" {
+				rctx = contextWithUserID(context.Background(), tt.userid)
+			}
+			got, err := client.List(rctx, tt.request)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("RecordsService.List() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr && (len(got.Records) != tt.wantCount) {
+				t.Errorf("RecordsService.List() got = %v, want %v", len(got.Records), tt.wantCount)
 				return
 			}
 		})

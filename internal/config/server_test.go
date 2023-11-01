@@ -3,21 +3,17 @@ package config
 import (
 	"reflect"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
-const testString = "test"
+var testString = uuid.NewString()
 
-func setTestEnvVars(t *testing.T) {
-	t.Helper()
-
+func TestReadEnvServerCfg(t *testing.T) {
 	t.Setenv("GKS_ADDRESS", testString)
 	t.Setenv("CRYPTO_KEY", testString)
 	t.Setenv("CERTIFICATE", testString)
 	t.Setenv("DATABASE_DSN", testString)
-}
-
-func TestParseServerConfig(t *testing.T) {
-	setTestEnvVars(t)
 
 	tests := []struct {
 		want    any
