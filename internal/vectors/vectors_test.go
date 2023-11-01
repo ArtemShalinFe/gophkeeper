@@ -69,10 +69,10 @@ func TestComparison_Compare(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Comparison{
-				VectorA: tt.fields.VectorA,
-				VectorB: tt.fields.VectorB,
-			}
+			c := NewComparison(
+				tt.fields.VectorA,
+				tt.fields.VectorB,
+			)
 			if got := c.Compare(); got != tt.want {
 				t.Errorf("Comparison.Compare() = %v, want %v", got, tt.want)
 			}

@@ -1,2 +1,2 @@
 ignore:
-  - "**/*.pb.go"  # ignore protobuff files
+  - "**/*pb.go"  # ignore protobuff files

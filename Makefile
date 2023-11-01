@@ -67,6 +67,8 @@ mocks: protoc
 	mockgen -source=internal/models/records.go -destination=internal/server/mock_records_service.go -package server
 	mockgen -source=internal/server/users_grpc.pb.go -destination=internal/server/mock_users_grpc_pb.go -package server
 	mockgen -source=internal/server/records_grpc.pb.go -destination=internal/server/mock_records_grpc_pb.go -package server
+	mockgen -source=internal/models/users.go -destination=internal/models/mock_users_storage.go -package models
+	mockgen -source=internal/models/records.go -destination=internal/models/mock_records_storage.go -package models
 	
 # PROTOBUF
 .PHONY: protoc
