@@ -1,5 +1,9 @@
 # Makefile
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+VERSION=$(shell cat VERSION)
+DATETIME=$(shell date +'%Y/%m/%d %H:%M:%S')
+COMMIT=$(shell git rev-parse --short HEAD)
+LDFLAGS=-ldflags="-X github.com/ArtemShalinFe/gophkeeper/internal/build.buildVersion=$(VERSION) -X 'github.com/ArtemShalinFe/gophkeeper/internal/build.buildDate=$(DATETIME)' -X github.com/ArtemShalinFe/gophkeeper/internal/build.buildCommit=$(COMMIT)"
 
 .PHONY: all
 all: ;
@@ -7,12 +11,12 @@ all: ;
 # BUILD-CLIENT
 .PHONY: build-gclient
 build-gclient:
-	go build -C ./cmd/gclient -o $(shell pwd)/cmd/gclient/gclient
+	go build -C ./cmd/gclient -o $(shell pwd)/cmd/gclient/gclient $(LDFLAGS)
 
 # BUILD-SERVER
 .PHONY: build-gserver
 build-gserver:
-	go build -C ./cmd/gserver -o $(shell pwd)/cmd/gserver/gserver
+	go build -C ./cmd/gserver -o $(shell pwd)/cmd/gserver/gserver $(LDFLAGS)
 
 # BUILD
 .PHONY: build
