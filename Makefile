@@ -47,7 +47,8 @@ run-pg:
 		--name=postgresql \
 		-v $(ROOT_DIR)/deployments/db/init/:/docker-entrypoint-initdb.d \
 		-v $(ROOT_DIR)/deployments/db/data/:/var/lib/postgresql/data \
-		-e POSTGRES_PASSWORD=gopher \
+		-e POSTGRES_USER=gkeeper \
+		-e POSTGRES_PASSWORD=gkeeper \
 		-d \
 		-p 5432:5432 \
 		postgres:15.3

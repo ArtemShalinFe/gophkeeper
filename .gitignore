@@ -12,8 +12,8 @@
 *.test
 
 # Binaries
-cmd/client/gclient
-cmd/server/gserver
+cmd/gclient/gclient
+cmd/gserver/gserver
 
 .DS_Store
 *debug_bin

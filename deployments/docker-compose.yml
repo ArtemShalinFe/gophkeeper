@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   
-  postgres:
+  postgresql:
     image: postgres:15.3
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -25,16 +25,18 @@ services:
       ports:
         - ${GKSERVER_PORT}:${GKSERVER_PORT}
       depends_on:
-        - postgres
+        - db
+      links:
+        - db
       environment:
         - GKS_ADDRESS=localhost:${GKSERVER_PORT}
-        - DATABASE_DSN=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/gophkeeper?sslmode=disable
+        - DATABASE_DSN=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql:5432/gophkeeper?sslmode=disable
       restart: always
   
-  # gclient:
-  #     build:
-  #       context: ./..
-  #       dockerfile: deployments/gagent/Dockerfile
-  #     depends_on:
-  #       - gagent
-  #     restart: always
+  gclient:
+      build:
+        context: ./..
+        dockerfile: deployments/gagent/Dockerfile
+      depends_on:
+        - gserver
+      restart: always

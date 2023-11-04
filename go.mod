@@ -4,7 +4,6 @@ go 1.21
 
 require (
 	github.com/gdamore/tcell/v2 v2.6.0
-	github.com/go-resty/resty/v2 v2.10.0
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgx/v5 v5.4.3

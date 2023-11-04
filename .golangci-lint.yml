@@ -21,6 +21,8 @@ run:
     - server_test.go
     - grpc_client_test.go
     - metadata_test.go
+    - users_test.go
+    - vectors_test.go
 
   # Invariable parameters #
 
