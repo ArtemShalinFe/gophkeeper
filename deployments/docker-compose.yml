@@ -25,9 +25,8 @@ services:
       ports:
         - ${GKSERVER_PORT}:${GKSERVER_PORT}
       depends_on:
-        - db
-      links:
-        - db
+        postgresql:
+          condition: service_healthy
       environment:
         - GKS_ADDRESS=localhost:${GKSERVER_PORT}
         - DATABASE_DSN=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql:5432/gophkeeper?sslmode=disable
