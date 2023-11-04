@@ -10,6 +10,7 @@ import (
 	"github.com/ArtemShalinFe/gophkeeper/internal/models"
 )
 
+// UsersService - Implements GRPC server methods that are responsible for working with user in storage.
 type UsersService struct {
 	UnimplementedUsersServer
 	log         *zap.Logger
@@ -21,6 +22,7 @@ type userRequest interface {
 	GetPassword() string
 }
 
+// NewUsersService - Object Constructor.
 func NewUsersService(log *zap.Logger, userStorage models.UserStorage) *UsersService {
 	return &UsersService{
 		log:         log,
@@ -28,6 +30,7 @@ func NewUsersService(log *zap.Logger, userStorage models.UserStorage) *UsersServ
 	}
 }
 
+// Register - used when user register. Create new user in storage.
 func (us *UsersService) Register(ctx context.Context, request *RegisterRequest) (*RegisterResponse, error) {
 	var resp RegisterResponse
 
@@ -48,6 +51,7 @@ func (us *UsersService) Register(ctx context.Context, request *RegisterRequest) 
 	return &resp, nil
 }
 
+// Login - used when user log in. Retrieves the user from the storage.
 func (us *UsersService) Login(ctx context.Context, request *LoginRequest) (*LoginResponse, error) {
 	var resp LoginResponse
 

@@ -35,104 +35,104 @@ func (m *MockRecordsClient) EXPECT() *MockRecordsClientMockRecorder {
 	return m.recorder
 }
 
-// Add mocks base method.
-func (m *MockRecordsClient) Add(ctx context.Context, in *AddRecordRequest, opts ...grpc.CallOption) (*AddRecordResponse, error) {
+// AddRecord mocks base method.
+func (m *MockRecordsClient) AddRecord(ctx context.Context, in *AddRecordRequest, opts ...grpc.CallOption) (*AddRecordResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "Add", varargs...)
+	ret := m.ctrl.Call(m, "AddRecord", varargs...)
 	ret0, _ := ret[0].(*AddRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Add indicates an expected call of Add.
-func (mr *MockRecordsClientMockRecorder) Add(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// AddRecord indicates an expected call of AddRecord.
+func (mr *MockRecordsClientMockRecorder) AddRecord(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockRecordsClient)(nil).Add), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRecord", reflect.TypeOf((*MockRecordsClient)(nil).AddRecord), varargs...)
 }
 
-// Delete mocks base method.
-func (m *MockRecordsClient) Delete(ctx context.Context, in *DeleteRecordRequest, opts ...grpc.CallOption) (*DeleteRecordResponse, error) {
+// DeleteRecord mocks base method.
+func (m *MockRecordsClient) DeleteRecord(ctx context.Context, in *DeleteRecordRequest, opts ...grpc.CallOption) (*DeleteRecordResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "Delete", varargs...)
+	ret := m.ctrl.Call(m, "DeleteRecord", varargs...)
 	ret0, _ := ret[0].(*DeleteRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Delete indicates an expected call of Delete.
-func (mr *MockRecordsClientMockRecorder) Delete(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// DeleteRecord indicates an expected call of DeleteRecord.
+func (mr *MockRecordsClientMockRecorder) DeleteRecord(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRecordsClient)(nil).Delete), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRecord", reflect.TypeOf((*MockRecordsClient)(nil).DeleteRecord), varargs...)
 }
 
-// Get mocks base method.
-func (m *MockRecordsClient) Get(ctx context.Context, in *GetRecordRequest, opts ...grpc.CallOption) (*GetRecordResponse, error) {
+// GetRecord mocks base method.
+func (m *MockRecordsClient) GetRecord(ctx context.Context, in *GetRecordRequest, opts ...grpc.CallOption) (*GetRecordResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "Get", varargs...)
+	ret := m.ctrl.Call(m, "GetRecord", varargs...)
 	ret0, _ := ret[0].(*GetRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get.
-func (mr *MockRecordsClientMockRecorder) Get(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// GetRecord indicates an expected call of GetRecord.
+func (mr *MockRecordsClientMockRecorder) GetRecord(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRecordsClient)(nil).Get), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecord", reflect.TypeOf((*MockRecordsClient)(nil).GetRecord), varargs...)
 }
 
-// List mocks base method.
-func (m *MockRecordsClient) List(ctx context.Context, in *ListRecordRequest, opts ...grpc.CallOption) (*ListRecordResponse, error) {
+// ListRecords mocks base method.
+func (m *MockRecordsClient) ListRecords(ctx context.Context, in *ListRecordRequest, opts ...grpc.CallOption) (*ListRecordResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "List", varargs...)
+	ret := m.ctrl.Call(m, "ListRecords", varargs...)
 	ret0, _ := ret[0].(*ListRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// List indicates an expected call of List.
-func (mr *MockRecordsClientMockRecorder) List(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// ListRecords indicates an expected call of ListRecords.
+func (mr *MockRecordsClientMockRecorder) ListRecords(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRecordsClient)(nil).List), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRecords", reflect.TypeOf((*MockRecordsClient)(nil).ListRecords), varargs...)
 }
 
-// Update mocks base method.
-func (m *MockRecordsClient) Update(ctx context.Context, in *UpdateRecordRequest, opts ...grpc.CallOption) (*UpdateRecordResponse, error) {
+// UpdateRecord mocks base method.
+func (m *MockRecordsClient) UpdateRecord(ctx context.Context, in *UpdateRecordRequest, opts ...grpc.CallOption) (*UpdateRecordResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "Update", varargs...)
+	ret := m.ctrl.Call(m, "UpdateRecord", varargs...)
 	ret0, _ := ret[0].(*UpdateRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Update indicates an expected call of Update.
-func (mr *MockRecordsClientMockRecorder) Update(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// UpdateRecord indicates an expected call of UpdateRecord.
+func (mr *MockRecordsClientMockRecorder) UpdateRecord(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRecordsClient)(nil).Update), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRecord", reflect.TypeOf((*MockRecordsClient)(nil).UpdateRecord), varargs...)
 }
 
 // MockRecordsServer is a mock of RecordsServer interface.
@@ -158,79 +158,79 @@ func (m *MockRecordsServer) EXPECT() *MockRecordsServerMockRecorder {
 	return m.recorder
 }
 
-// Add mocks base method.
-func (m *MockRecordsServer) Add(arg0 context.Context, arg1 *AddRecordRequest) (*AddRecordResponse, error) {
+// AddRecord mocks base method.
+func (m *MockRecordsServer) AddRecord(arg0 context.Context, arg1 *AddRecordRequest) (*AddRecordResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Add", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddRecord", arg0, arg1)
 	ret0, _ := ret[0].(*AddRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Add indicates an expected call of Add.
-func (mr *MockRecordsServerMockRecorder) Add(arg0, arg1 interface{}) *gomock.Call {
+// AddRecord indicates an expected call of AddRecord.
+func (mr *MockRecordsServerMockRecorder) AddRecord(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockRecordsServer)(nil).Add), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRecord", reflect.TypeOf((*MockRecordsServer)(nil).AddRecord), arg0, arg1)
 }
 
-// Delete mocks base method.
-func (m *MockRecordsServer) Delete(arg0 context.Context, arg1 *DeleteRecordRequest) (*DeleteRecordResponse, error) {
+// DeleteRecord mocks base method.
+func (m *MockRecordsServer) DeleteRecord(arg0 context.Context, arg1 *DeleteRecordRequest) (*DeleteRecordResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteRecord", arg0, arg1)
 	ret0, _ := ret[0].(*DeleteRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Delete indicates an expected call of Delete.
-func (mr *MockRecordsServerMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
+// DeleteRecord indicates an expected call of DeleteRecord.
+func (mr *MockRecordsServerMockRecorder) DeleteRecord(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRecordsServer)(nil).Delete), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRecord", reflect.TypeOf((*MockRecordsServer)(nil).DeleteRecord), arg0, arg1)
 }
 
-// Get mocks base method.
-func (m *MockRecordsServer) Get(arg0 context.Context, arg1 *GetRecordRequest) (*GetRecordResponse, error) {
+// GetRecord mocks base method.
+func (m *MockRecordsServer) GetRecord(arg0 context.Context, arg1 *GetRecordRequest) (*GetRecordResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetRecord", arg0, arg1)
 	ret0, _ := ret[0].(*GetRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get.
-func (mr *MockRecordsServerMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
+// GetRecord indicates an expected call of GetRecord.
+func (mr *MockRecordsServerMockRecorder) GetRecord(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRecordsServer)(nil).Get), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecord", reflect.TypeOf((*MockRecordsServer)(nil).GetRecord), arg0, arg1)
 }
 
-// List mocks base method.
-func (m *MockRecordsServer) List(arg0 context.Context, arg1 *ListRecordRequest) (*ListRecordResponse, error) {
+// ListRecords mocks base method.
+func (m *MockRecordsServer) ListRecords(arg0 context.Context, arg1 *ListRecordRequest) (*ListRecordResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", arg0, arg1)
+	ret := m.ctrl.Call(m, "ListRecords", arg0, arg1)
 	ret0, _ := ret[0].(*ListRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// List indicates an expected call of List.
-func (mr *MockRecordsServerMockRecorder) List(arg0, arg1 interface{}) *gomock.Call {
+// ListRecords indicates an expected call of ListRecords.
+func (mr *MockRecordsServerMockRecorder) ListRecords(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRecordsServer)(nil).List), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRecords", reflect.TypeOf((*MockRecordsServer)(nil).ListRecords), arg0, arg1)
 }
 
-// Update mocks base method.
-func (m *MockRecordsServer) Update(arg0 context.Context, arg1 *UpdateRecordRequest) (*UpdateRecordResponse, error) {
+// UpdateRecord mocks base method.
+func (m *MockRecordsServer) UpdateRecord(arg0 context.Context, arg1 *UpdateRecordRequest) (*UpdateRecordResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateRecord", arg0, arg1)
 	ret0, _ := ret[0].(*UpdateRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Update indicates an expected call of Update.
-func (mr *MockRecordsServerMockRecorder) Update(arg0, arg1 interface{}) *gomock.Call {
+// UpdateRecord indicates an expected call of UpdateRecord.
+func (mr *MockRecordsServerMockRecorder) UpdateRecord(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRecordsServer)(nil).Update), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRecord", reflect.TypeOf((*MockRecordsServer)(nil).UpdateRecord), arg0, arg1)
 }
 
 // mustEmbedUnimplementedRecordsServer mocks base method.

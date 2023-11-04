@@ -20,15 +20,17 @@ import (
 	"github.com/ArtemShalinFe/gophkeeper/internal/models"
 )
 
+// GKClient - a grpc client that works with the gophkeeper server.
 type GKClient struct {
-	cc   grpc.ClientConnInterface
-	log  *zap.Logger
+	cc  grpc.ClientConnInterface
+	log *zap.Logger
+	// addr - an address of gophekeeper server.
 	addr string
-
 	// certpath - absolute path to cert.crt file
 	certPath string
 }
 
+// NewGKClient - Object Constructor.
 func NewGKClient(ctx context.Context, cfg *config.ClientCfg, log *zap.Logger) (*GKClient, error) {
 	c := &GKClient{
 		addr:     cfg.GKeeper,
@@ -97,6 +99,7 @@ func (c *GKClient) getDialOpts() []grpc.DialOption {
 	return opts
 }
 
+// AddUser - The method is used when registering a user.
 func (c *GKClient) AddUser(ctx context.Context, us *models.UserDTO) (*models.User, error) {
 	resp, err := NewUsersClient(c.cc).Register(ctx, &RegisterRequest{
 		Login:    us.Login,
@@ -113,6 +116,7 @@ func (c *GKClient) AddUser(ctx context.Context, us *models.UserDTO) (*models.Use
 	}, nil
 }
 
+// GetUser - This method is used when the user logs in.
 func (c *GKClient) GetUser(ctx context.Context, us *models.UserDTO) (*models.User, error) {
 	resp, err := NewUsersClient(c.cc).Login(ctx, &LoginRequest{
 		Login:    us.Login,
@@ -129,7 +133,8 @@ func (c *GKClient) GetUser(ctx context.Context, us *models.UserDTO) (*models.Use
 	}, nil
 }
 
-func (c *GKClient) List(ctx context.Context, userID string, offset int, limit int) ([]*models.Record, error) {
+// ListRecords - used to retrieving user records.
+func (c *GKClient) ListRecords(ctx context.Context, userID string, offset int, limit int) ([]*models.Record, error) {
 	serverStorage := NewRecordsClient(c.cc)
 
 	headers := map[string]string{
@@ -141,7 +146,7 @@ func (c *GKClient) List(ctx context.Context, userID string, offset int, limit in
 	req.Offset = int32(offset)
 	req.Limit = int32(limit)
 
-	lr, err := serverStorage.List(mctx, req)
+	lr, err := serverStorage.ListRecords(mctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("an error occured while retrieving list records, err: %w", err)
 	}
@@ -161,7 +166,8 @@ func (c *GKClient) List(ctx context.Context, userID string, offset int, limit in
 	return rs, nil
 }
 
-func (c *GKClient) Get(ctx context.Context, userID string, recordID string) (*models.Record, error) {
+// GetRecord - used to retrieving record.
+func (c *GKClient) GetRecord(ctx context.Context, userID string, recordID string) (*models.Record, error) {
 	serverStorage := NewRecordsClient(c.cc)
 
 	headers := map[string]string{
@@ -170,7 +176,7 @@ func (c *GKClient) Get(ctx context.Context, userID string, recordID string) (*mo
 
 	mctx := metadata.NewOutgoingContext(ctx, metadata.New(headers))
 	req := &GetRecordRequest{Id: recordID}
-	rr, err := serverStorage.Get(mctx, req)
+	rr, err := serverStorage.GetRecord(mctx, req)
 	if err != nil {
 		st, ok := status.FromError(err)
 		if ok {
@@ -190,7 +196,8 @@ func (c *GKClient) Get(ctx context.Context, userID string, recordID string) (*mo
 	return r, nil
 }
 
-func (c *GKClient) Delete(ctx context.Context, userID string, recordID string) error {
+// DeleteRecord - mark records as deleted.
+func (c *GKClient) DeleteRecord(ctx context.Context, userID string, recordID string) error {
 	serverStorage := NewRecordsClient(c.cc)
 
 	headers := map[string]string{
@@ -199,7 +206,7 @@ func (c *GKClient) Delete(ctx context.Context, userID string, recordID string) e
 
 	mctx := metadata.NewOutgoingContext(ctx, metadata.New(headers))
 	req := &DeleteRecordRequest{Id: recordID}
-	_, err := serverStorage.Delete(mctx, req)
+	_, err := serverStorage.DeleteRecord(mctx, req)
 	if err != nil {
 		return fmt.Errorf("an error occured while removing record, err: %w", err)
 	}
@@ -207,7 +214,8 @@ func (c *GKClient) Delete(ctx context.Context, userID string, recordID string) e
 	return nil
 }
 
-func (c *GKClient) Add(ctx context.Context, userID string, record *models.RecordDTO) (*models.Record, error) {
+// AddRecord - add new record to the storage.
+func (c *GKClient) AddRecord(ctx context.Context, userID string, record *models.RecordDTO) (*models.Record, error) {
 	if len(record.Data) > models.MaxFileSize {
 		return nil, errors.New(models.ErrLargeFile)
 	}
@@ -238,7 +246,7 @@ func (c *GKClient) Add(ctx context.Context, userID string, record *models.Record
 	if err != nil {
 		return nil, fmt.Errorf("an error add occured while convert record to protobuff, err: %w", err)
 	}
-	_, err = serverStorage.Add(mctx, &AddRecordRequest{
+	_, err = serverStorage.AddRecord(mctx, &AddRecordRequest{
 		Record: rpb,
 	})
 	if err != nil {
@@ -248,7 +256,8 @@ func (c *GKClient) Add(ctx context.Context, userID string, record *models.Record
 	return r, nil
 }
 
-func (c *GKClient) Update(ctx context.Context, userID string, record *models.Record) (*models.Record, error) {
+// UpdateRecord - Update record to the storage.
+func (c *GKClient) UpdateRecord(ctx context.Context, userID string, record *models.Record) (*models.Record, error) {
 	serverStorage := NewRecordsClient(c.cc)
 
 	headers := map[string]string{
@@ -261,7 +270,7 @@ func (c *GKClient) Update(ctx context.Context, userID string, record *models.Rec
 	if err != nil {
 		return nil, fmt.Errorf("an error update occured while convert record to protobuff, err: %w", err)
 	}
-	_, err = serverStorage.Update(mctx, &UpdateRecordRequest{
+	_, err = serverStorage.UpdateRecord(mctx, &UpdateRecordRequest{
 		Record: rpb,
 	})
 	if err != nil {

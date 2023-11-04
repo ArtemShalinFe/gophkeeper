@@ -12,6 +12,7 @@ import (
 	"github.com/ArtemShalinFe/gophkeeper/internal/models"
 )
 
+// AddUser - The method is used when registering a user.
 func (db *DB) AddUser(ctx context.Context, us *models.UserDTO) (*models.User, error) {
 	sql := `INSERT INTO users(login, pass)
 	VALUES ($1, $2)
@@ -34,6 +35,7 @@ func (db *DB) AddUser(ctx context.Context, us *models.UserDTO) (*models.User, er
 	return &u, nil
 }
 
+// GetUser - This method is used when the user logs in.
 func (db *DB) GetUser(ctx context.Context, us *models.UserDTO) (*models.User, error) {
 	sql := `SELECT id, login, pass
 	FROM users

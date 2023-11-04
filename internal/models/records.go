@@ -30,16 +30,16 @@ var ErrRecordNotFound = errors.New("record not found")
 var ErrUserStorageNotFound = errors.New("user cache not found")
 
 type RecordStorage interface {
-	// List - used to retrieving user records.
-	List(ctx context.Context, userID string, offset int, limit int) ([]*Record, error)
-	// Get - used to retrieving record.
-	Get(ctx context.Context, userID string, recordID string) (*Record, error)
-	// Delete - mark records as deleted.
-	Delete(ctx context.Context, userID string, recordID string) error
-	// Add - add new record to the storage.
-	Add(ctx context.Context, userID string, record *RecordDTO) (*Record, error)
-	// Update - Update record to the storage.
-	Update(ctx context.Context, userID string, record *Record) (*Record, error)
+	// ListRecords - used to retrieving user records.
+	ListRecords(ctx context.Context, userID string, offset int, limit int) ([]*Record, error)
+	// GetRecord - used to retrieving record.
+	GetRecord(ctx context.Context, userID string, recordID string) (*Record, error)
+	// DeleteRecord - mark records as deleted.
+	DeleteRecord(ctx context.Context, userID string, recordID string) error
+	// AddRecord - add new record to the storage.
+	AddRecord(ctx context.Context, userID string, record *RecordDTO) (*Record, error)
+	// UpdateRecord - update record to the storage.
+	UpdateRecord(ctx context.Context, userID string, record *Record) (*Record, error)
 }
 
 // DataType - the object contains the data directly related to the record.
@@ -57,7 +57,7 @@ const (
 	TextType DataType = "TEXT"
 	// BinaryType - the file data.
 	BinaryType DataType = "BINARY"
-	// CardType - is the bank card details including: number, term and owner. cvv code is not stored.
+	// CardType - is the bank card details including: number, term and owner. Cvv code is not stored.
 	CardType DataType = "CARD"
 )
 

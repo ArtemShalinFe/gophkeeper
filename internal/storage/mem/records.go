@@ -8,7 +8,8 @@ import (
 	"github.com/google/uuid"
 )
 
-func (ms *MemStorage) List(ctx context.Context, userID string, offset int, limit int) ([]*models.Record, error) {
+// ListRecords - used to retrieving user records.
+func (ms *MemStorage) ListRecords(ctx context.Context, userID string, offset int, limit int) ([]*models.Record, error) {
 	ms.mutex.RLock()
 	defer ms.mutex.RUnlock()
 
@@ -38,7 +39,8 @@ func (ms *MemStorage) List(ctx context.Context, userID string, offset int, limit
 	return rs, nil
 }
 
-func (ms *MemStorage) Get(ctx context.Context, userID string, recordID string) (*models.Record, error) {
+// GetRecord - used to retrieving record.
+func (ms *MemStorage) GetRecord(ctx context.Context, userID string, recordID string) (*models.Record, error) {
 	ms.mutex.RLock()
 	defer ms.mutex.RUnlock()
 
@@ -58,7 +60,8 @@ func (ms *MemStorage) Get(ctx context.Context, userID string, recordID string) (
 	return r, nil
 }
 
-func (ms *MemStorage) Add(ctx context.Context, userID string, record *models.RecordDTO) (*models.Record, error) {
+// AddRecord - add new record to the storage.
+func (ms *MemStorage) AddRecord(ctx context.Context, userID string, record *models.RecordDTO) (*models.Record, error) {
 	ms.mutex.RLock()
 	defer ms.mutex.RUnlock()
 
@@ -91,7 +94,8 @@ func (ms *MemStorage) Add(ctx context.Context, userID string, record *models.Rec
 	return r, nil
 }
 
-func (ms *MemStorage) Update(ctx context.Context, userID string, record *models.Record) (*models.Record, error) {
+// UpdateRecord - Update record to the storage.
+func (ms *MemStorage) UpdateRecord(ctx context.Context, userID string, record *models.Record) (*models.Record, error) {
 	ms.mutex.RLock()
 	defer ms.mutex.RUnlock()
 
@@ -110,7 +114,8 @@ func (ms *MemStorage) Update(ctx context.Context, userID string, record *models.
 	return record, nil
 }
 
-func (ms *MemStorage) Delete(ctx context.Context, userID string, recordID string) error {
+// DeleteRecord - mark records as deleted.
+func (ms *MemStorage) DeleteRecord(ctx context.Context, userID string, recordID string) error {
 	ms.mutex.RLock()
 	defer ms.mutex.RUnlock()
 

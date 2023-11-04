@@ -226,7 +226,7 @@ func TestGKClient_GetUser(t *testing.T) {
 	}
 }
 
-func TestGKClient_List(t *testing.T) {
+func TestGKClient_ListRecords(t *testing.T) {
 	ctx := context.Background()
 	log := zap.L()
 
@@ -298,7 +298,7 @@ func TestGKClient_List(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.wantErr {
-				mock.EXPECT().List(gomock.Any(), gomock.Any()).Return(nil, errSomethingWentWrong)
+				mock.EXPECT().ListRecords(gomock.Any(), gomock.Any()).Return(nil, errSomethingWentWrong)
 			} else {
 				var rspb []*Record
 				for _, r := range tt.want {
@@ -308,23 +308,23 @@ func TestGKClient_List(t *testing.T) {
 					}
 					rspb = append(rspb, rpb)
 				}
-				mock.EXPECT().List(gomock.Any(), gomock.Any()).Return(&ListRecordResponse{
+				mock.EXPECT().ListRecords(gomock.Any(), gomock.Any()).Return(&ListRecordResponse{
 					Records: rspb,
 				}, nil)
 			}
-			got, err := c.List(ctx, tt.us.ID, tt.offset, tt.limit)
+			got, err := c.ListRecords(ctx, tt.us.ID, tt.offset, tt.limit)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GKClient.List() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GKClient.ListRecords() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr && len(got) != len(tt.want) {
-				t.Errorf("GKClient.List() = %v, want %v", len(got), tt.want)
+				t.Errorf("GKClient.ListRecords() = %v, want %v", len(got), tt.want)
 			}
 		})
 	}
 }
 
-func TestGKClient_Get(t *testing.T) {
+func TestGKClient_GetRecord(t *testing.T) {
 	ctx := context.Background()
 	log := zap.L()
 
@@ -393,29 +393,29 @@ func TestGKClient_Get(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.wantErr {
-				mock.EXPECT().Get(gomock.Any(), gomock.Any()).Return(nil, errSomethingWentWrong)
+				mock.EXPECT().GetRecord(gomock.Any(), gomock.Any()).Return(nil, errSomethingWentWrong)
 			} else {
 				rpb, err := convRecordToProtobuff(tt.want)
 				if err != nil {
 					t.Errorf("an error occured while convert record to protobuff, err: %v", err)
 				}
-				mock.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&GetRecordResponse{
+				mock.EXPECT().GetRecord(gomock.Any(), gomock.Any()).Return(&GetRecordResponse{
 					Record: rpb,
 				}, nil)
 			}
-			got, err := c.Get(ctx, tt.us.ID, tt.recordID)
+			got, err := c.GetRecord(ctx, tt.us.ID, tt.recordID)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GKClient.Get() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GKClient.GetRecord() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr && got.ID != tt.want.ID {
-				t.Errorf("GKClient.Get() = %v, want %v", got, tt.want)
+				t.Errorf("GKClient.GetRecord() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestGKClient_Delete(t *testing.T) {
+func TestGKClient_DeleteRecord(t *testing.T) {
 	ctx := context.Background()
 	log := zap.L()
 
@@ -484,20 +484,20 @@ func TestGKClient_Delete(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.wantErr {
-				mock.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil, errSomethingWentWrong)
+				mock.EXPECT().DeleteRecord(gomock.Any(), gomock.Any()).Return(nil, errSomethingWentWrong)
 			} else {
-				mock.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(&DeleteRecordResponse{}, nil)
+				mock.EXPECT().DeleteRecord(gomock.Any(), gomock.Any()).Return(&DeleteRecordResponse{}, nil)
 			}
-			err := c.Delete(ctx, tt.us.ID, tt.recordID)
+			err := c.DeleteRecord(ctx, tt.us.ID, tt.recordID)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GKClient.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GKClient.DeleteRecord() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
 	}
 }
 
-func TestGKClient_Add(t *testing.T) {
+func TestGKClient_AddRecord(t *testing.T) {
 	ctx := context.Background()
 	log := zap.L()
 
@@ -582,25 +582,25 @@ func TestGKClient_Add(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.wantErr {
-				mock.EXPECT().Add(gomock.Any(), gomock.Any()).Return(nil, errSomethingWentWrong)
+				mock.EXPECT().AddRecord(gomock.Any(), gomock.Any()).Return(nil, errSomethingWentWrong)
 			} else {
-				mock.EXPECT().Add(gomock.Any(), gomock.Any()).Return(&AddRecordResponse{
+				mock.EXPECT().AddRecord(gomock.Any(), gomock.Any()).Return(&AddRecordResponse{
 					Id: r.ID,
 				}, nil)
 			}
-			got, err := c.Add(ctx, tt.us.ID, tt.record)
+			got, err := c.AddRecord(ctx, tt.us.ID, tt.record)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GKClient.Add() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GKClient.AddRecord() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr && got.Description != tt.want.Description {
-				t.Errorf("GKClient.Add() = %v, want %v", got.Description, tt.want.Description)
+				t.Errorf("GKClient.AddRecord() = %v, want %v", got.Description, tt.want.Description)
 			}
 		})
 	}
 }
 
-func TestGKClient_Update(t *testing.T) {
+func TestGKClient_UpdateRecord(t *testing.T) {
 	ctx := context.Background()
 	log := zap.L()
 
@@ -670,19 +670,19 @@ func TestGKClient_Update(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.wantErr {
-				mock.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil, errSomethingWentWrong)
+				mock.EXPECT().UpdateRecord(gomock.Any(), gomock.Any()).Return(nil, errSomethingWentWrong)
 			} else {
-				mock.EXPECT().Update(gomock.Any(), gomock.Any()).Return(&UpdateRecordResponse{
+				mock.EXPECT().UpdateRecord(gomock.Any(), gomock.Any()).Return(&UpdateRecordResponse{
 					Id: r.ID,
 				}, nil)
 			}
-			got, err := c.Update(ctx, tt.us.ID, tt.record)
+			got, err := c.UpdateRecord(ctx, tt.us.ID, tt.record)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GKClient.Update() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GKClient.UpdateRecord() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr && got.ID != tt.want.ID {
-				t.Errorf("GKClient.Update() = %v, want %v", got.Description, tt.want.Description)
+				t.Errorf("GKClient.UpdateRecord() = %v, want %v", got.Description, tt.want.Description)
 			}
 		})
 	}

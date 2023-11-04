@@ -167,11 +167,11 @@ func TestRecordsService_Get(t *testing.T) {
 		t.Errorf("an error occured while encode card record to protobuff, err: %v", err)
 	}
 
-	rs.EXPECT().Get(gomock.Any(), u.ID, r1.ID).Return(r1, nil)
-	rs.EXPECT().Get(gomock.Any(), u.ID, r2.ID).Return(r2, nil)
-	rs.EXPECT().Get(gomock.Any(), u.ID, r3.ID).Return(r3, nil)
-	rs.EXPECT().Get(gomock.Any(), u.ID, r4.ID).Return(r4, nil)
-	rs.EXPECT().Get(gomock.Any(), u.ID, r1.ID).Return(nil, models.ErrRecordNotFound)
+	rs.EXPECT().GetRecord(gomock.Any(), u.ID, r1.ID).Return(r1, nil)
+	rs.EXPECT().GetRecord(gomock.Any(), u.ID, r2.ID).Return(r2, nil)
+	rs.EXPECT().GetRecord(gomock.Any(), u.ID, r3.ID).Return(r3, nil)
+	rs.EXPECT().GetRecord(gomock.Any(), u.ID, r4.ID).Return(r4, nil)
+	rs.EXPECT().GetRecord(gomock.Any(), u.ID, r1.ID).Return(nil, models.ErrRecordNotFound)
 
 	d, err := NewRecordServiceDialer(t, us, rs)
 	if err != nil {
@@ -281,13 +281,13 @@ func TestRecordsService_Get(t *testing.T) {
 			if tt.userid != "" {
 				rctx = contextWithUserID(context.Background(), tt.userid)
 			}
-			got, err := client.Get(rctx, tt.request)
+			got, err := client.GetRecord(rctx, tt.request)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("RecordsService.Get() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("RecordsService.GetRecord() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr && !reflect.DeepEqual(got.Record, tt.want.Record) {
-				t.Errorf("RecordsService.Get() = %v, want %v", got, tt.want)
+				t.Errorf("RecordsService.GetRecord() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -327,11 +327,11 @@ func TestRecordsService_Add(t *testing.T) {
 		t.Errorf("an error occured while encode card record to protobuff, err: %v", err)
 	}
 
-	rs.EXPECT().Add(gomock.Any(), u.ID, gomock.Any()).Return(r1, nil)
-	rs.EXPECT().Add(gomock.Any(), u.ID, gomock.Any()).Return(r2, nil)
-	rs.EXPECT().Add(gomock.Any(), u.ID, gomock.Any()).Return(r3, nil)
-	rs.EXPECT().Add(gomock.Any(), u.ID, gomock.Any()).Return(r4, nil)
-	rs.EXPECT().Add(gomock.Any(), u.ID, gomock.Any()).Return(nil, errSomethingWentWrong)
+	rs.EXPECT().AddRecord(gomock.Any(), u.ID, gomock.Any()).Return(r1, nil)
+	rs.EXPECT().AddRecord(gomock.Any(), u.ID, gomock.Any()).Return(r2, nil)
+	rs.EXPECT().AddRecord(gomock.Any(), u.ID, gomock.Any()).Return(r3, nil)
+	rs.EXPECT().AddRecord(gomock.Any(), u.ID, gomock.Any()).Return(r4, nil)
+	rs.EXPECT().AddRecord(gomock.Any(), u.ID, gomock.Any()).Return(nil, errSomethingWentWrong)
 
 	d, err := NewRecordServiceDialer(t, us, rs)
 	if err != nil {
@@ -441,13 +441,13 @@ func TestRecordsService_Add(t *testing.T) {
 			if tt.userid != "" {
 				rctx = contextWithUserID(context.Background(), tt.userid)
 			}
-			got, err := client.Add(rctx, tt.request)
+			got, err := client.AddRecord(rctx, tt.request)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("RecordsService.Add() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("RecordsService.AddRecord() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr && !reflect.DeepEqual(got.Id, tt.want.Id) {
-				t.Errorf("RecordsService.Add() = %v, want %v", got, tt.want)
+				t.Errorf("RecordsService.AddRecord() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -487,11 +487,11 @@ func TestRecordsService_Update(t *testing.T) {
 		t.Errorf("an error occured while encode card record to protobuff, err: %v", err)
 	}
 
-	rs.EXPECT().Update(gomock.Any(), u.ID, gomock.Any()).Return(r1, nil)
-	rs.EXPECT().Update(gomock.Any(), u.ID, gomock.Any()).Return(r2, nil)
-	rs.EXPECT().Update(gomock.Any(), u.ID, gomock.Any()).Return(r3, nil)
-	rs.EXPECT().Update(gomock.Any(), u.ID, gomock.Any()).Return(r4, nil)
-	rs.EXPECT().Update(gomock.Any(), u.ID, gomock.Any()).Return(nil, errSomethingWentWrong)
+	rs.EXPECT().UpdateRecord(gomock.Any(), u.ID, gomock.Any()).Return(r1, nil)
+	rs.EXPECT().UpdateRecord(gomock.Any(), u.ID, gomock.Any()).Return(r2, nil)
+	rs.EXPECT().UpdateRecord(gomock.Any(), u.ID, gomock.Any()).Return(r3, nil)
+	rs.EXPECT().UpdateRecord(gomock.Any(), u.ID, gomock.Any()).Return(r4, nil)
+	rs.EXPECT().UpdateRecord(gomock.Any(), u.ID, gomock.Any()).Return(nil, errSomethingWentWrong)
 
 	d, err := NewRecordServiceDialer(t, us, rs)
 	if err != nil {
@@ -601,13 +601,13 @@ func TestRecordsService_Update(t *testing.T) {
 			if tt.userid != "" {
 				rctx = contextWithUserID(context.Background(), tt.userid)
 			}
-			got, err := client.Update(rctx, tt.request)
+			got, err := client.UpdateRecord(rctx, tt.request)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("RecordsService.Update() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("RecordsService.UpdateRecord() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr && !reflect.DeepEqual(got.Id, tt.want.Id) {
-				t.Errorf("RecordsService.Update() = %v, want %v", got, tt.want)
+				t.Errorf("RecordsService.UpdateRecord() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -628,11 +628,11 @@ func TestRecordsService_Delete(t *testing.T) {
 	r3 := generateBinaryRecord(t)
 	r4 := generateCardRecord(t)
 
-	rs.EXPECT().Delete(gomock.Any(), u.ID, r1.ID).Return(nil)
-	rs.EXPECT().Delete(gomock.Any(), u.ID, r2.ID).Return(nil)
-	rs.EXPECT().Delete(gomock.Any(), u.ID, r3.ID).Return(nil)
-	rs.EXPECT().Delete(gomock.Any(), u.ID, r4.ID).Return(nil)
-	rs.EXPECT().Delete(gomock.Any(), u.ID, r4.ID).Return(errSomethingWentWrong)
+	rs.EXPECT().DeleteRecord(gomock.Any(), u.ID, r1.ID).Return(nil)
+	rs.EXPECT().DeleteRecord(gomock.Any(), u.ID, r2.ID).Return(nil)
+	rs.EXPECT().DeleteRecord(gomock.Any(), u.ID, r3.ID).Return(nil)
+	rs.EXPECT().DeleteRecord(gomock.Any(), u.ID, r4.ID).Return(nil)
+	rs.EXPECT().DeleteRecord(gomock.Any(), u.ID, r4.ID).Return(errSomethingWentWrong)
 
 	d, err := NewRecordServiceDialer(t, us, rs)
 	if err != nil {
@@ -720,9 +720,9 @@ func TestRecordsService_Delete(t *testing.T) {
 			if tt.userid != "" {
 				rctx = contextWithUserID(context.Background(), tt.userid)
 			}
-			_, err = client.Delete(rctx, tt.request)
+			_, err = client.DeleteRecord(rctx, tt.request)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("RecordsService.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("RecordsService.DeleteRecord() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
@@ -744,11 +744,11 @@ func TestRecordsService_List(t *testing.T) {
 		t.Errorf("an occured error when creating a new dialer, err: %v", err)
 	}
 	records := generateRecords(t, models.DefaultLimit)
-	rs.EXPECT().List(gomock.Any(), u.ID, 0, models.DefaultLimit).Return(records, nil)
+	rs.EXPECT().ListRecords(gomock.Any(), u.ID, 0, models.DefaultLimit).Return(records, nil)
 
 	records2 := generateRecords(t, 7)
-	rs.EXPECT().List(gomock.Any(), u.ID, 1, models.DefaultLimit).Return(records2, nil)
-	rs.EXPECT().List(gomock.Any(), u.ID, 2, models.DefaultLimit).Return(nil, errSomethingWentWrong)
+	rs.EXPECT().ListRecords(gomock.Any(), u.ID, 1, models.DefaultLimit).Return(records2, nil)
+	rs.EXPECT().ListRecords(gomock.Any(), u.ID, 2, models.DefaultLimit).Return(nil, errSomethingWentWrong)
 
 	tests := []struct {
 		name      string
@@ -806,14 +806,14 @@ func TestRecordsService_List(t *testing.T) {
 			if tt.userid != "" {
 				rctx = contextWithUserID(context.Background(), tt.userid)
 			}
-			got, err := client.List(rctx, tt.request)
+			got, err := client.ListRecords(rctx, tt.request)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("RecordsService.List() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("RecordsService.ListRecords() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			if !tt.wantErr && (len(got.Records) != tt.wantCount) {
-				t.Errorf("RecordsService.List() got = %v, want %v", len(got.Records), tt.wantCount)
+				t.Errorf("RecordsService.ListRecords() got = %v, want %v", len(got.Records), tt.wantCount)
 				return
 			}
 		})

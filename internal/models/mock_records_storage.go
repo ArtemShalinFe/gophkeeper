@@ -34,76 +34,76 @@ func (m *MockRecordStorage) EXPECT() *MockRecordStorageMockRecorder {
 	return m.recorder
 }
 
-// Add mocks base method.
-func (m *MockRecordStorage) Add(ctx context.Context, userID string, record *RecordDTO) (*Record, error) {
+// AddRecord mocks base method.
+func (m *MockRecordStorage) AddRecord(ctx context.Context, userID string, record *RecordDTO) (*Record, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Add", ctx, userID, record)
+	ret := m.ctrl.Call(m, "AddRecord", ctx, userID, record)
 	ret0, _ := ret[0].(*Record)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Add indicates an expected call of Add.
-func (mr *MockRecordStorageMockRecorder) Add(ctx, userID, record interface{}) *gomock.Call {
+// AddRecord indicates an expected call of AddRecord.
+func (mr *MockRecordStorageMockRecorder) AddRecord(ctx, userID, record interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockRecordStorage)(nil).Add), ctx, userID, record)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddRecord", reflect.TypeOf((*MockRecordStorage)(nil).AddRecord), ctx, userID, record)
 }
 
-// Delete mocks base method.
-func (m *MockRecordStorage) Delete(ctx context.Context, userID, recordID string) error {
+// DeleteRecord mocks base method.
+func (m *MockRecordStorage) DeleteRecord(ctx context.Context, userID, recordID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, userID, recordID)
+	ret := m.ctrl.Call(m, "DeleteRecord", ctx, userID, recordID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete.
-func (mr *MockRecordStorageMockRecorder) Delete(ctx, userID, recordID interface{}) *gomock.Call {
+// DeleteRecord indicates an expected call of DeleteRecord.
+func (mr *MockRecordStorageMockRecorder) DeleteRecord(ctx, userID, recordID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRecordStorage)(nil).Delete), ctx, userID, recordID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRecord", reflect.TypeOf((*MockRecordStorage)(nil).DeleteRecord), ctx, userID, recordID)
 }
 
-// Get mocks base method.
-func (m *MockRecordStorage) Get(ctx context.Context, userID, recordID string) (*Record, error) {
+// GetRecord mocks base method.
+func (m *MockRecordStorage) GetRecord(ctx context.Context, userID, recordID string) (*Record, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, userID, recordID)
+	ret := m.ctrl.Call(m, "GetRecord", ctx, userID, recordID)
 	ret0, _ := ret[0].(*Record)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get.
-func (mr *MockRecordStorageMockRecorder) Get(ctx, userID, recordID interface{}) *gomock.Call {
+// GetRecord indicates an expected call of GetRecord.
+func (mr *MockRecordStorageMockRecorder) GetRecord(ctx, userID, recordID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRecordStorage)(nil).Get), ctx, userID, recordID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecord", reflect.TypeOf((*MockRecordStorage)(nil).GetRecord), ctx, userID, recordID)
 }
 
-// List mocks base method.
-func (m *MockRecordStorage) List(ctx context.Context, userID string, offset, limit int) ([]*Record, error) {
+// ListRecords mocks base method.
+func (m *MockRecordStorage) ListRecords(ctx context.Context, userID string, offset, limit int) ([]*Record, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, userID, offset, limit)
+	ret := m.ctrl.Call(m, "ListRecords", ctx, userID, offset, limit)
 	ret0, _ := ret[0].([]*Record)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// List indicates an expected call of List.
-func (mr *MockRecordStorageMockRecorder) List(ctx, userID, offset, limit interface{}) *gomock.Call {
+// ListRecords indicates an expected call of ListRecords.
+func (mr *MockRecordStorageMockRecorder) ListRecords(ctx, userID, offset, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRecordStorage)(nil).List), ctx, userID, offset, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRecords", reflect.TypeOf((*MockRecordStorage)(nil).ListRecords), ctx, userID, offset, limit)
 }
 
-// Update mocks base method.
-func (m *MockRecordStorage) Update(ctx context.Context, userID string, record *Record) (*Record, error) {
+// UpdateRecord mocks base method.
+func (m *MockRecordStorage) UpdateRecord(ctx context.Context, userID string, record *Record) (*Record, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, userID, record)
+	ret := m.ctrl.Call(m, "UpdateRecord", ctx, userID, record)
 	ret0, _ := ret[0].(*Record)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Update indicates an expected call of Update.
-func (mr *MockRecordStorageMockRecorder) Update(ctx, userID, record interface{}) *gomock.Call {
+// UpdateRecord indicates an expected call of UpdateRecord.
+func (mr *MockRecordStorageMockRecorder) UpdateRecord(ctx, userID, record interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRecordStorage)(nil).Update), ctx, userID, record)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRecord", reflect.TypeOf((*MockRecordStorage)(nil).UpdateRecord), ctx, userID, record)
 }

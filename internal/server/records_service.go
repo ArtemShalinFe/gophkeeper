@@ -18,12 +18,14 @@ import (
 
 const userIDHeader = "userid"
 
+// RecordsService - Implements GRPC server methods that are responsible for working with user records in storage.
 type RecordsService struct {
 	UnimplementedRecordsServer
 	log           *zap.Logger
 	recordStorage models.RecordStorage
 }
 
+// NewRecordsService - Object Constructor.
 func NewRecordsService(log *zap.Logger, recordStorage models.RecordStorage) *RecordsService {
 	return &RecordsService{
 		log:           log,
@@ -33,7 +35,8 @@ func NewRecordsService(log *zap.Logger, recordStorage models.RecordStorage) *Rec
 
 var errUnauthenticatedTemplate = "an occured error while retrieving user id from context, err: %v"
 
-func (rs *RecordsService) Get(ctx context.Context, request *GetRecordRequest) (*GetRecordResponse, error) {
+// GetRecord - used to retrieving record.
+func (rs *RecordsService) GetRecord(ctx context.Context, request *GetRecordRequest) (*GetRecordResponse, error) {
 	var rr GetRecordResponse
 
 	uid, err := getUserIDFromContext(ctx)
@@ -41,7 +44,7 @@ func (rs *RecordsService) Get(ctx context.Context, request *GetRecordRequest) (*
 		return &rr, status.Errorf(codes.Unauthenticated, fmt.Sprintf(errUnauthenticatedTemplate, err))
 	}
 
-	r, err := rs.recordStorage.Get(ctx, uid, request.GetId())
+	r, err := rs.recordStorage.GetRecord(ctx, uid, request.GetId())
 	if err != nil {
 		if errors.Is(err, models.ErrRecordNotFound) {
 			return &rr, status.Errorf(codes.NotFound, models.ErrRecordNotFound.Error())
@@ -61,7 +64,8 @@ func (rs *RecordsService) Get(ctx context.Context, request *GetRecordRequest) (*
 	return &rr, nil
 }
 
-func (rs *RecordsService) Add(ctx context.Context, request *AddRecordRequest) (*AddRecordResponse, error) {
+// AddRecord - add new record to the storage.
+func (rs *RecordsService) AddRecord(ctx context.Context, request *AddRecordRequest) (*AddRecordResponse, error) {
 	var rr AddRecordResponse
 
 	uid, err := getUserIDFromContext(ctx)
@@ -90,7 +94,7 @@ func (rs *RecordsService) Add(ctx context.Context, request *AddRecordRequest) (*
 		return &rr, status.Errorf(codes.Internal, models.ErrLargeFile)
 	}
 
-	r, err := rs.recordStorage.Add(ctx, uid, rdto)
+	r, err := rs.recordStorage.AddRecord(ctx, uid, rdto)
 	if err != nil {
 		return &rr, status.Errorf(codes.Internal,
 			fmt.Sprintf("an error occurred while add record in storage, err: %v", err))
@@ -100,7 +104,9 @@ func (rs *RecordsService) Add(ctx context.Context, request *AddRecordRequest) (*
 	return &rr, nil
 }
 
-func (rs *RecordsService) Update(ctx context.Context, request *UpdateRecordRequest) (*UpdateRecordResponse, error) {
+// UpdateRecord - Update record to the storage.
+func (rs *RecordsService) UpdateRecord(ctx context.Context,
+	request *UpdateRecordRequest) (*UpdateRecordResponse, error) {
 	var rr UpdateRecordResponse
 
 	uid, err := getUserIDFromContext(ctx)
@@ -116,7 +122,7 @@ func (rs *RecordsService) Update(ctx context.Context, request *UpdateRecordReque
 
 	r.Metadata = convMetadataFromProtobuff(request.Record.Metadata)
 
-	_, err = rs.recordStorage.Update(ctx, uid, r)
+	_, err = rs.recordStorage.UpdateRecord(ctx, uid, r)
 	if err != nil {
 		return &rr, status.Errorf(codes.Internal,
 			fmt.Sprintf("an error occurred while update record in storage, err: %v", err))
@@ -126,7 +132,9 @@ func (rs *RecordsService) Update(ctx context.Context, request *UpdateRecordReque
 	return &rr, nil
 }
 
-func (rs *RecordsService) Delete(ctx context.Context, request *DeleteRecordRequest) (*DeleteRecordResponse, error) {
+// DeleteRecord - mark records as deleted.
+func (rs *RecordsService) DeleteRecord(ctx context.Context,
+	request *DeleteRecordRequest) (*DeleteRecordResponse, error) {
 	var rr DeleteRecordResponse
 	uid, err := getUserIDFromContext(ctx)
 	if err != nil {
@@ -135,7 +143,7 @@ func (rs *RecordsService) Delete(ctx context.Context, request *DeleteRecordReque
 
 	recordID := request.GetId()
 
-	if err := rs.recordStorage.Delete(ctx, uid, recordID); err != nil {
+	if err := rs.recordStorage.DeleteRecord(ctx, uid, recordID); err != nil {
 		return &rr, status.Errorf(codes.Internal,
 			fmt.Sprintf("an error occurred while add or delete record from storage, err: %v", err))
 	}
@@ -143,7 +151,8 @@ func (rs *RecordsService) Delete(ctx context.Context, request *DeleteRecordReque
 	return &rr, nil
 }
 
-func (rs *RecordsService) List(ctx context.Context, request *ListRecordRequest) (*ListRecordResponse, error) {
+// ListRecords - used to retrieving user records.
+func (rs *RecordsService) ListRecords(ctx context.Context, request *ListRecordRequest) (*ListRecordResponse, error) {
 	var lr ListRecordResponse
 
 	uid, err := getUserIDFromContext(ctx)
@@ -151,7 +160,7 @@ func (rs *RecordsService) List(ctx context.Context, request *ListRecordRequest) 
 		return &lr, status.Errorf(codes.Unauthenticated, fmt.Sprintf(errUnauthenticatedTemplate, err))
 	}
 
-	rcs, err := rs.recordStorage.List(ctx, uid, int(request.Offset), int(request.Limit))
+	rcs, err := rs.recordStorage.ListRecords(ctx, uid, int(request.Offset), int(request.Limit))
 	if err != nil {
 		return &lr, status.Errorf(codes.Internal,
 			fmt.Sprintf("an occured error while retrieving record list from storage, err: %v", err))

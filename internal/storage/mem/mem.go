@@ -25,6 +25,7 @@ func NewMemStorage() *MemStorage {
 	return ms
 }
 
+// AddUserRecordStorage - create user storage in cache.
 func (ms *MemStorage) AddUserRecordStorage(userID string) error {
 	ms.mutex.Lock()
 	defer ms.mutex.Unlock()
@@ -39,6 +40,7 @@ func (ms *MemStorage) AddUserRecordStorage(userID string) error {
 	return nil
 }
 
+// RemoveUserRecordStorage - remove user storage from cache.
 func (ms *MemStorage) RemoveUserRecordStorage(userID string) error {
 	ms.mutex.Lock()
 	defer ms.mutex.Unlock()

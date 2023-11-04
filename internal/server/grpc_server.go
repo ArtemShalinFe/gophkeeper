@@ -16,6 +16,7 @@ import (
 	"github.com/ArtemShalinFe/gophkeeper/internal/models"
 )
 
+// GKServer - the gophkeeper server object.
 type GKServer struct {
 	grpcServer     *grpc.Server
 	log            *zap.Logger
@@ -24,6 +25,7 @@ type GKServer struct {
 	addr           string
 }
 
+// InitServer - Initiates the gophkeeper server object.
 func InitServer(rs models.RecordStorage,
 	us models.UserStorage,
 	log *zap.Logger,
@@ -85,6 +87,7 @@ func (s *GKServer) requestLogger() grpc.UnaryServerInterceptor {
 	}
 }
 
+// Serve - starts servicing incoming requests. Used for tests.
 func (s *GKServer) Serve(lis net.Listener) error {
 	if err := s.grpcServer.Serve(lis); err != nil {
 		return fmt.Errorf("an occured error when server serve request, err: %w", err)
@@ -92,6 +95,7 @@ func (s *GKServer) Serve(lis net.Listener) error {
 	return nil
 }
 
+// ListenAndServe - starts servicing incoming requests.
 func (s *GKServer) ListenAndServe() error {
 	listen, err := net.Listen("tcp", s.addr)
 	if err != nil {
@@ -101,13 +105,14 @@ func (s *GKServer) ListenAndServe() error {
 	RegisterUsersServer(s.grpcServer, s.UsersService)
 	RegisterRecordsServer(s.grpcServer, s.RecordsService)
 
-	if err := s.grpcServer.Serve(listen); err != nil {
+	if err := s.Serve(listen); err != nil {
 		return fmt.Errorf("an occured error when grpc server serve, err: %w", err)
 	}
 
 	return nil
 }
 
+// Shutdown - Implements a server graceful shutdown.
 func (s *GKServer) Shutdown(ctx context.Context) {
 	s.grpcServer.GracefulStop()
 }

@@ -160,9 +160,9 @@ message Metadata {
 }
 
 service Records {
-  rpc Get(GetRecordRequest) returns (GetRecordResponse) {}
-  rpc Add(AddRecordRequest) returns (AddRecordResponse) {}
-  rpc Update(UpdateRecordRequest) returns (UpdateRecordResponse) {}
-  rpc List(ListRecordRequest) returns (ListRecordResponse) {}
-  rpc Delete(DeleteRecordRequest) returns (DeleteRecordResponse){}
+  rpc GetRecord(GetRecordRequest) returns (GetRecordResponse) {}
+  rpc AddRecord(AddRecordRequest) returns (AddRecordResponse) {}
+  rpc UpdateRecord(UpdateRecordRequest) returns (UpdateRecordResponse) {}
+  rpc ListRecords(ListRecordRequest) returns (ListRecordResponse) {}
+  rpc DeleteRecord(DeleteRecordRequest) returns (DeleteRecordResponse){}
 }

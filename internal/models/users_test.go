@@ -238,10 +238,10 @@ func TestUser_GetRecords(t *testing.T) {
 			}
 
 			if tt.wantErr {
-				stg.EXPECT().List(gomock.Any(), tt.fields.ID, tt.args.offset, tt.args.limit).
+				stg.EXPECT().ListRecords(gomock.Any(), tt.fields.ID, tt.args.offset, tt.args.limit).
 					Return(nil, errSomethingWentWrong)
 			} else {
-				stg.EXPECT().List(gomock.Any(), tt.fields.ID, tt.args.offset, tt.args.limit).
+				stg.EXPECT().ListRecords(gomock.Any(), tt.fields.ID, tt.args.offset, tt.args.limit).
 					Return(tt.want, nil)
 			}
 
@@ -314,20 +314,20 @@ func TestUser_GetRecord(t *testing.T) {
 			}
 
 			if tt.wantErr {
-				stg.EXPECT().Get(gomock.Any(), tt.fields.ID, tt.args.recordID).
+				stg.EXPECT().GetRecord(gomock.Any(), tt.fields.ID, tt.args.recordID).
 					Return(nil, errSomethingWentWrong)
 			} else {
-				stg.EXPECT().Get(gomock.Any(), tt.fields.ID, tt.args.recordID).
+				stg.EXPECT().GetRecord(gomock.Any(), tt.fields.ID, tt.args.recordID).
 					Return(tt.want, nil)
 			}
 
 			got, err := u.GetRecord(ctx, stg, tt.args.recordID)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("User.GetRecords() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("User.GetRecord() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr && !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("User.GetRecords() = %v, want %v", got, tt.want)
+				t.Errorf("User.GetRecord() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -400,10 +400,10 @@ func TestUser_AddRecord(t *testing.T) {
 			}
 
 			if tt.wantErr {
-				stg.EXPECT().Add(gomock.Any(), tt.fields.ID, gomock.Any()).
+				stg.EXPECT().AddRecord(gomock.Any(), tt.fields.ID, gomock.Any()).
 					Return(nil, errSomethingWentWrong)
 			} else {
-				stg.EXPECT().Add(gomock.Any(), tt.fields.ID, gomock.Any()).
+				stg.EXPECT().AddRecord(gomock.Any(), tt.fields.ID, gomock.Any()).
 					Return(tt.want, nil)
 			}
 
@@ -490,10 +490,10 @@ func TestUser_UpdateRecord(t *testing.T) {
 
 			if tt.args.record.ID != "" {
 				if tt.wantErr {
-					stg.EXPECT().Update(gomock.Any(), tt.fields.ID, gomock.Any()).
+					stg.EXPECT().UpdateRecord(gomock.Any(), tt.fields.ID, gomock.Any()).
 						Return(nil, errSomethingWentWrong)
 				} else {
-					stg.EXPECT().Update(gomock.Any(), tt.fields.ID, gomock.Any()).
+					stg.EXPECT().UpdateRecord(gomock.Any(), tt.fields.ID, gomock.Any()).
 						Return(tt.want, nil)
 				}
 			}
@@ -577,10 +577,10 @@ func TestUser_DeleteRecord(t *testing.T) {
 
 			if tt.args.recordID != "" {
 				if tt.wantErr {
-					stg.EXPECT().Delete(gomock.Any(), tt.fields.ID, gomock.Any()).
+					stg.EXPECT().DeleteRecord(gomock.Any(), tt.fields.ID, gomock.Any()).
 						Return(errSomethingWentWrong)
 				} else {
-					stg.EXPECT().Delete(gomock.Any(), tt.fields.ID, gomock.Any()).
+					stg.EXPECT().DeleteRecord(gomock.Any(), tt.fields.ID, gomock.Any()).
 						Return(nil)
 				}
 			}

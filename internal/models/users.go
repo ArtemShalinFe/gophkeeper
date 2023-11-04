@@ -80,7 +80,7 @@ func (u *UserDTO) GetUser(ctx context.Context, db UserStorage) (*User, error) {
 
 // GetRecords - The method is used to get a list of user records from the storage.
 func (u *User) GetRecords(ctx context.Context, db RecordStorage, offset int, limit int) ([]*Record, error) {
-	rs, err := db.List(ctx, u.ID, offset, limit)
+	rs, err := db.ListRecords(ctx, u.ID, offset, limit)
 	if err != nil {
 		return nil, fmt.Errorf("an error occured while retrieving records, err: %w", err)
 	}
@@ -90,7 +90,7 @@ func (u *User) GetRecords(ctx context.Context, db RecordStorage, offset int, lim
 
 // GetRecord - The method is used to get a record by the user's recordID from the storage.
 func (u *User) GetRecord(ctx context.Context, db RecordStorage, recordID string) (*Record, error) {
-	rs, err := db.Get(ctx, u.ID, recordID)
+	rs, err := db.GetRecord(ctx, u.ID, recordID)
 	if err != nil {
 		return nil, fmt.Errorf("an error occured while retrieving record, err: %w", err)
 	}
@@ -100,7 +100,7 @@ func (u *User) GetRecord(ctx context.Context, db RecordStorage, recordID string)
 
 // AddRecord - This method is used to add a user record to the repository.
 func (u *User) AddRecord(ctx context.Context, db RecordStorage, record *RecordDTO) (*Record, error) {
-	rs, err := db.Add(ctx, u.ID, record)
+	rs, err := db.AddRecord(ctx, u.ID, record)
 	if err != nil {
 		return nil, fmt.Errorf("an error occured while add record, err: %w", err)
 	}
@@ -113,7 +113,7 @@ func (u *User) UpdateRecord(ctx context.Context, db RecordStorage, record *Recor
 	if record.ID == "" {
 		return nil, ErrRecordNotFound
 	}
-	rs, err := db.Update(ctx, u.ID, record)
+	rs, err := db.UpdateRecord(ctx, u.ID, record)
 	if err != nil {
 		return nil, fmt.Errorf("an error occured while update record, err: %w", err)
 	}
@@ -126,7 +126,7 @@ func (u *User) DeleteRecord(ctx context.Context, db RecordStorage, recordID stri
 	if recordID == "" {
 		return ErrRecordNotFound
 	}
-	if err := db.Delete(ctx, u.ID, recordID); err != nil {
+	if err := db.DeleteRecord(ctx, u.ID, recordID); err != nil {
 		return fmt.Errorf("an error occured while delete record, err: %w", err)
 	}
 
@@ -162,7 +162,7 @@ syncloop:
 func (u *User) syncStorages(ctx context.Context, stg1 RecordStorage, stg2 RecordStorage) error {
 	offset := 0
 	for {
-		stg2rs, err := stg2.List(ctx, u.ID, offset, DefaultLimit)
+		stg2rs, err := stg2.ListRecords(ctx, u.ID, offset, DefaultLimit)
 		if err != nil {
 			return fmt.Errorf("an error occured while retrieving list records from server, err: %w", err)
 		}
@@ -172,12 +172,12 @@ func (u *User) syncStorages(ctx context.Context, stg1 RecordStorage, stg2 Record
 		}
 
 		for _, r2 := range stg2rs {
-			r1, err := stg1.Get(ctx, u.ID, r2.ID)
+			r1, err := stg1.GetRecord(ctx, u.ID, r2.ID)
 			if err != nil {
 				if !errors.Is(err, ErrRecordNotFound) {
 					return fmt.Errorf("an error occured while trying update record(ID=%s), err: %w", r2.ID, err)
 				}
-				_, err = stg1.Update(ctx, u.ID, r2)
+				_, err = stg1.UpdateRecord(ctx, u.ID, r2)
 				if err != nil {
 					return fmt.Errorf(errSyncRecordTmp, r2.ID, err)
 				}
@@ -187,21 +187,21 @@ func (u *User) syncStorages(ctx context.Context, stg1 RecordStorage, stg2 Record
 			switch vectors.NewComparison(r2, r1).Compare() {
 			case vectors.VectorAIsEqualsVectorB:
 			case vectors.VectorAIsHigherVectorB:
-				if _, err := stg1.Update(ctx, u.ID, r2); err != nil {
+				if _, err := stg1.UpdateRecord(ctx, u.ID, r2); err != nil {
 					return fmt.Errorf(errSyncRecordTmp, r2.ID, err)
 				}
 			case vectors.VectorAIsLowerVectorB:
-				if _, err := stg2.Update(ctx, u.ID, r1); err != nil {
+				if _, err := stg2.UpdateRecord(ctx, u.ID, r1); err != nil {
 					return fmt.Errorf(errSyncRecordTmp, r1.ID, err)
 				}
 			default:
-				if _, err := stg1.Update(ctx, u.ID, r2); err != nil {
+				if _, err := stg1.UpdateRecord(ctx, u.ID, r2); err != nil {
 					return fmt.Errorf(errSyncRecordTmp, r2.ID, err)
 				}
 
 				r1.ID = uuid.NewString()
 				r1.Description = fmt.Sprintf("(COPY) %s", r1.Description)
-				if _, err := stg2.Update(ctx, u.ID, r1); err != nil {
+				if _, err := stg2.UpdateRecord(ctx, u.ID, r1); err != nil {
 					return fmt.Errorf(errSyncRecordTmp, r1.ID, err)
 				}
 			}

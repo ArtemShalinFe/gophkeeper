@@ -23,7 +23,8 @@ func tmpErrCommitTxErr() string {
 	return "an occured error while trying commit tx"
 }
 
-func (db *DB) List(ctx context.Context, userID string, offset int, limit int) ([]*models.Record, error) {
+// ListRecords - used to retrieving user records.
+func (db *DB) ListRecords(ctx context.Context, userID string, offset int, limit int) ([]*models.Record, error) {
 	tx, err := db.pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf(tmpErrBeginTxErr(), err)
@@ -82,7 +83,8 @@ func (db *DB) List(ctx context.Context, userID string, offset int, limit int) ([
 	return rs, nil
 }
 
-func (db *DB) Get(ctx context.Context, userID string, recordID string) (*models.Record, error) {
+// GetRecord - used to retrieving record.
+func (db *DB) GetRecord(ctx context.Context, userID string, recordID string) (*models.Record, error) {
 	sql := `SELECT r.id, r.userid, r.description, r.dtype, r.created, r.modified, r.hashsum, r.version, dr.data
 	FROM records as r
 		LEFT JOIN datarecords as dr
@@ -103,7 +105,8 @@ func (db *DB) Get(ctx context.Context, userID string, recordID string) (*models.
 	return &r, nil
 }
 
-func (db *DB) Add(ctx context.Context, userID string, record *models.RecordDTO) (*models.Record, error) {
+// AddRecord - add new record to the storage.
+func (db *DB) AddRecord(ctx context.Context, userID string, record *models.RecordDTO) (*models.Record, error) {
 	tx, err := db.pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf(tmpErrBeginTxErr(), err)
@@ -152,7 +155,8 @@ func (db *DB) Add(ctx context.Context, userID string, record *models.RecordDTO) 
 	return &r, nil
 }
 
-func (db *DB) Update(ctx context.Context, userID string, record *models.Record) (*models.Record, error) {
+// UpdateRecord - update record to the storage.
+func (db *DB) UpdateRecord(ctx context.Context, userID string, record *models.Record) (*models.Record, error) {
 	tx, err := db.pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf(tmpErrBeginTxErr(), err)
@@ -196,18 +200,8 @@ func (db *DB) Update(ctx context.Context, userID string, record *models.Record) 
 	return &r, nil
 }
 
-func (db *DB) addDataRecord(ctx context.Context, tx pgx.Tx, recordID string, recordData []byte) error {
-	sql := `INSERT INTO datarecords(recordid, data)
-	VALUES ($1, $2)
-	ON CONFLICT (recordid) DO UPDATE SET data = $2`
-	if _, err := tx.Exec(ctx, sql, recordID, recordData); err != nil {
-		return fmt.Errorf("add or update data for record was failed, err: %w", err)
-	}
-
-	return nil
-}
-
-func (db *DB) Delete(ctx context.Context, userID string, recordID string) error {
+// DeleteRecord - used to delete records as deleted.
+func (db *DB) DeleteRecord(ctx context.Context, userID string, recordID string) error {
 	tx, err := db.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf(tmpErrBeginTxErr(), err)
@@ -237,6 +231,17 @@ func (db *DB) Delete(ctx context.Context, userID string, recordID string) error 
 
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf(tmpErrCommitTxErr(), err)
+	}
+
+	return nil
+}
+
+func (db *DB) addDataRecord(ctx context.Context, tx pgx.Tx, recordID string, recordData []byte) error {
+	sql := `INSERT INTO datarecords(recordid, data)
+	VALUES ($1, $2)
+	ON CONFLICT (recordid) DO UPDATE SET data = $2`
+	if _, err := tx.Exec(ctx, sql, recordID, recordData); err != nil {
+		return fmt.Errorf("add or update data for record was failed, err: %w", err)
 	}
 
 	return nil
