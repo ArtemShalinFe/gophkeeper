@@ -35,7 +35,7 @@ services:
   gclient:
       build:
         context: ./..
-        dockerfile: deployments/gagent/Dockerfile
+        dockerfile: deployments/gclient/Dockerfile
       depends_on:
         - gserver
       restart: always
