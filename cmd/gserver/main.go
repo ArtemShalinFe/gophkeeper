@@ -13,6 +13,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/ArtemShalinFe/gophkeeper/internal/build"
 	"github.com/ArtemShalinFe/gophkeeper/internal/config"
 	"github.com/ArtemShalinFe/gophkeeper/internal/server"
 	"github.com/ArtemShalinFe/gophkeeper/internal/storage/sql"
@@ -41,6 +42,8 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("an error occured while init logger err: %w ", err)
 	}
+
+	log.Info(fmt.Sprintf("%s", build.NewBuild()))
 
 	componentsErrs := make(chan error, componentsCount)
 	go func(log *zap.Logger) {
