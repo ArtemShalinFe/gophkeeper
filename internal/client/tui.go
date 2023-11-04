@@ -14,9 +14,11 @@ import (
 )
 
 const (
+	// DefaultFieldWidth - The width of the default fields that will be displayed in the interface.
 	defaultFieldWidth = 40
 )
 
+// TUI - An object that contains everything necessary for the text user interface to work correctly.
 type TUI struct {
 	app      *tview.Application
 	pages    *tview.Pages
@@ -26,7 +28,7 @@ type TUI struct {
 	recLimit int
 }
 
-// Start starts graphical terminal user interface.
+// Start - starts graphical text user interface.
 func (ui *TUI) Start(ctx context.Context) error {
 	ui.app = tview.NewApplication()
 	ui.pages = tview.NewPages()
@@ -65,6 +67,7 @@ func (ui *TUI) Start(ctx context.Context) error {
 	}
 }
 
+// Sync - Synchronizes the client storage cache and the server storage using the version vector mechanism.
 func (ui *TUI) Sync(ctx context.Context) {
 	if ui.authUser == nil {
 		return
