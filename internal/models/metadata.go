@@ -5,11 +5,19 @@ import (
 	"strings"
 )
 
+// Metadata - for storing arbitrary textual meta-information
+// (data belonging to a website, an individual or a bank, lists of one-time activation codes, etc.).
 type Metadata struct {
-	Key   string `cbor:"key"`
+	// Key - The record key may not be unique.
+	Key string `cbor:"key"`
+	// Value - The text value of the record.
 	Value string `cbor:"value"`
 }
 
+// NewMetadataFromStringArray - The function converts an array of strings into an object Metadata.
+// Example strings:
+//   - "key1:value1" <- A key value pair separated by a colon.
+//   - "keyvalue" <- Just a string, in this case a sequence number will be added to the key.
 func NewMetadataFromStringArray(ss []string) ([]*Metadata, error) {
 	var mi []*Metadata
 	if len(ss) == 0 {

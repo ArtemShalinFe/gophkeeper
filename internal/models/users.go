@@ -6,32 +6,46 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ArtemShalinFe/gophkeeper/internal/vectors"
 	"github.com/google/uuid"
+
+	"github.com/ArtemShalinFe/gophkeeper/internal/vectors"
 )
 
+// UserDTO - Data transfer object for User.
 type UserDTO struct {
 	Login    string `cbor:"login"`
 	Password string `cbor:"password"`
 }
 
+// User - An object that identifies the user.
 type User struct {
 	ID           string `cbor:"uuid"`
 	Login        string `cbor:"login"`
 	PasswordHash string `cbor:"password"`
 }
 
+// ErrLoginIsBusy - The error is returned if the username is already occupied.
 var ErrLoginIsBusy = errors.New("login is busy")
+
+// ErrUnknowUser - The error is returned if the password is not correct.
 var ErrUnknowUser = errors.New("unknow user")
 
-const errSyncRecordTmp = "an error occure while update record (ID=%s), err: %w"
-const DefaultLimit = 30
+const (
+	errSyncRecordTmp = "an error occure while update record (ID=%s), err: %w"
+	// DefaultLimit - Limit of records that are returned from storage.
+	DefaultLimit = 30
+)
 
+// UserStorage - The interface that the repository should implement for user registration and authorization.
 type UserStorage interface {
+	// AddUser - The method is used when registering a user.
 	AddUser(ctx context.Context, us *UserDTO) (*User, error)
+	// GetUser - This method is used when the user logs in.
 	GetUser(ctx context.Context, us *UserDTO) (*User, error)
 }
 
+// AddUser - The method is used when registering a user.
+// The method checks that the Login field is not empty.
 func (u *UserDTO) AddUser(ctx context.Context, db UserStorage) (*User, error) {
 	if u.Login == "" {
 		return nil, ErrUnknowUser
@@ -47,6 +61,8 @@ func (u *UserDTO) AddUser(ctx context.Context, db UserStorage) (*User, error) {
 	return us, nil
 }
 
+// GetUser - This method is used when the user logs in.
+// The method checks that the Login field is not empty.
 func (u *UserDTO) GetUser(ctx context.Context, db UserStorage) (*User, error) {
 	if u.Login == "" {
 		return nil, ErrUnknowUser
@@ -62,6 +78,7 @@ func (u *UserDTO) GetUser(ctx context.Context, db UserStorage) (*User, error) {
 	return us, nil
 }
 
+// GetRecords - The method is used to get a list of user records from the storage.
 func (u *User) GetRecords(ctx context.Context, db RecordStorage, offset int, limit int) ([]*Record, error) {
 	rs, err := db.List(ctx, u.ID, offset, limit)
 	if err != nil {
@@ -71,6 +88,7 @@ func (u *User) GetRecords(ctx context.Context, db RecordStorage, offset int, lim
 	return rs, nil
 }
 
+// GetRecord - The method is used to get a record by the user's recordID from the storage.
 func (u *User) GetRecord(ctx context.Context, db RecordStorage, recordID string) (*Record, error) {
 	rs, err := db.Get(ctx, u.ID, recordID)
 	if err != nil {
@@ -80,6 +98,7 @@ func (u *User) GetRecord(ctx context.Context, db RecordStorage, recordID string)
 	return rs, nil
 }
 
+// AddRecord - This method is used to add a user record to the repository.
 func (u *User) AddRecord(ctx context.Context, db RecordStorage, record *RecordDTO) (*Record, error) {
 	rs, err := db.Add(ctx, u.ID, record)
 	if err != nil {
@@ -89,6 +108,7 @@ func (u *User) AddRecord(ctx context.Context, db RecordStorage, record *RecordDT
 	return rs, nil
 }
 
+// UpdateRecord - This method is used to update a user record to the repository.
 func (u *User) UpdateRecord(ctx context.Context, db RecordStorage, record *Record) (*Record, error) {
 	if record.ID == "" {
 		return nil, ErrRecordNotFound
@@ -101,6 +121,7 @@ func (u *User) UpdateRecord(ctx context.Context, db RecordStorage, record *Recor
 	return rs, nil
 }
 
+// DeleteRecord - This method is used to delete a user record to the repository.
 func (u *User) DeleteRecord(ctx context.Context, db RecordStorage, recordID string) error {
 	if recordID == "" {
 		return ErrRecordNotFound
@@ -112,6 +133,7 @@ func (u *User) DeleteRecord(ctx context.Context, db RecordStorage, recordID stri
 	return nil
 }
 
+// SyncRecords - This method is used to synchronize user records between repositories.
 func (u *User) SyncRecords(ctx context.Context, stg1 RecordStorage, stg2 RecordStorage, tick int) error {
 	const t = "an error occured while sync stg1 (%T) with stg2 (%T), err: %w"
 

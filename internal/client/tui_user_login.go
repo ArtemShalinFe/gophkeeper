@@ -4,8 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/ArtemShalinFe/gophkeeper/internal/models"
 	"github.com/rivo/tview"
+
+	"github.com/ArtemShalinFe/gophkeeper/internal/models"
 )
 
 const defaulTickSync = 5

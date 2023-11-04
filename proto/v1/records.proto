@@ -91,7 +91,7 @@ message Record {
   // (data belonging to a website, an individual or a bank, lists of one-time activation codes, etc.).
   repeated Metadata metadata = 13;
 
-  // file version
+  // Version - file version.
   int64 version = 14;
 }
 
@@ -142,7 +142,7 @@ message ListRecordResponse {
   repeated Record records = 1;
 }
 
-// AddUpdateRecordResponse - returns the record id, or an error if something went wrong.
+// DeleteRecordRequest - returns the record id, or an error if something went wrong.
 // The user ID is passed in the request headers.
 message DeleteRecordRequest { 
   string id = 1;

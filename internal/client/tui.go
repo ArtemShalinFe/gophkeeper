@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/rivo/tview"
+	"go.uber.org/zap"
+
 	"github.com/ArtemShalinFe/gophkeeper/internal/config"
 	"github.com/ArtemShalinFe/gophkeeper/internal/models"
 	"github.com/ArtemShalinFe/gophkeeper/internal/server"
 	"github.com/ArtemShalinFe/gophkeeper/internal/storage/mem"
-
-	"github.com/rivo/tview"
-	"go.uber.org/zap"
 )
 
 const (

@@ -9,10 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ArtemShalinFe/gophkeeper/internal/models"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+
+	"github.com/ArtemShalinFe/gophkeeper/internal/models"
 )
 
 func addTableHeaderCell(name string) *tview.TableCell {
