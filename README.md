@@ -67,13 +67,13 @@ make build-gserver
 make run-pg
 ```
 
-1. Запустить сервер
+2. Запустить сервер
 
 ```make
 make run-gserver
 ```
 
-1. Запустить клиент
+3. Запустить клиент
 
 ```make
 make run-gclient
