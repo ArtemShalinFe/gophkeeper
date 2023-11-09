@@ -2,8 +2,14 @@ package config
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/caarlos0/env"
+)
+
+const (
+	defaultAddr = "localhost:6085"
+	defaultDSN  = "postgres://gkeeper:gkeeper@localhost:5432/gophkeeper?sslmode=disable"
 )
 
 // ServerCfg - An object that implements the server configuration.
@@ -28,6 +34,12 @@ func NewServerCfg() *ServerCfg {
 func ReadEnvServerCfg(cfg *ServerCfg) error {
 	if err := env.Parse(cfg); err != nil {
 		return fmt.Errorf("an error occured when parse server config err: %w", err)
+	}
+	if strings.TrimSpace(cfg.Addr) == "" {
+		cfg.Addr = defaultAddr
+	}
+	if strings.TrimSpace(cfg.DSN) == "" {
+		cfg.DSN = defaultDSN
 	}
 	return nil
 }

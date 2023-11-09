@@ -29,7 +29,7 @@ make tests
 
 ## Как собрать
 
-## Требования к окружению
+### Требования к окружению
 
 - [go](https://go.dev/doc/install)
 - [make](https://www.gnu.org/software/make/manual/make.html)
@@ -56,3 +56,25 @@ make build-gserver
 ```
 
 1. Собраный файл `gserver` будет находится в подкаталоге репозитория `./cmd/gserver/gserver`
+
+## Как запустить
+
+> Все команды выполняются из корневой директории проекта.
+
+1. Запустить базу данных для сервера postgresql
+
+```make
+make run-pg
+```
+
+1. Запустить сервер
+
+```make
+make run-gserver
+```
+
+1. Запустить клиент
+
+```make
+make run-gclient
+```

@@ -16,16 +16,20 @@ import (
 const (
 	// DefaultFieldWidth - The width of the default fields that will be displayed in the interface.
 	defaultFieldWidth = 40
+
+	// DefaultStatusTime - The default duration of status display.
+	defaultStatusTime = 10
 )
 
 // TUI - An object that contains everything necessary for the text user interface to work correctly.
 type TUI struct {
-	app      *tview.Application
-	pages    *tview.Pages
-	gkclient *server.GKClient
-	authUser *models.User
-	cache    *mem.MemStorage
-	recLimit int
+	app        *tview.Application
+	pages      *tview.Pages
+	gkclient   *server.GKClient
+	authUser   *models.User
+	cache      *mem.MemStorage
+	syncStatus *tview.TextView
+	recLimit   int
 }
 
 // Start - starts graphical text user interface.
@@ -33,6 +37,7 @@ func (ui *TUI) Start(ctx context.Context) error {
 	ui.app = tview.NewApplication()
 	ui.pages = tview.NewPages()
 	ui.recLimit = models.DefaultLimit
+	ui.syncStatus = tview.NewTextView().SetTextAlign(tview.AlignCenter)
 
 	log := zap.L()
 	cfg := config.NewClientCfg()
@@ -47,12 +52,16 @@ func (ui *TUI) Start(ctx context.Context) error {
 	ui.gkclient = gkclient
 	ui.cache = mem.NewMemStorage()
 	ui.displayUserLoginPage(ctx)
-
 	appStopCh := make(chan error)
+
+	statusFlex := tview.NewFlex().
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(ui.syncStatus, 0, 1, false), 0, 1, true)
 
 	flex := tview.NewFlex().
 		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(ui.pages, 0, 1, true), 0, 1, true)
+			AddItem(ui.pages, 0, 1, true).
+			AddItem(statusFlex, 1, 1, false), 0, 1, true)
 
 	go func() {
 		appStopCh <- ui.app.SetRoot(flex, true).EnableMouse(true).SetFocus(flex).Run()
@@ -73,6 +82,6 @@ func (ui *TUI) Sync(ctx context.Context) {
 		return
 	}
 	if err := ui.authUser.SyncRecords(ctx, ui.cache, ui.gkclient, defaulTickSync); err != nil {
-		ui.displayErr(err.Error())
+		ui.statusSetup("sync with server was failed", defaultStatusTime)
 	}
 }

@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/caarlos0/env"
 )
@@ -24,6 +25,9 @@ func NewClientCfg() *ClientCfg {
 func ReadEnvClientCfg(cfg *ClientCfg) error {
 	if err := env.Parse(cfg); err != nil {
 		return fmt.Errorf("an error occured when parse client config, err: %w", err)
+	}
+	if strings.TrimSpace(cfg.GKeeper) == "" {
+		cfg.GKeeper = defaultAddr
 	}
 	return nil
 }

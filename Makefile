@@ -81,3 +81,14 @@ protoc:
 	protoc proto/v1/*.proto  --proto_path=proto/v1 \
 	--go_out=internal/server --go_opt=module=github.com/ArtemShalinFe/gophkeeper/internal/server \
 	--go-grpc_out=internal/server --go-grpc_opt=module=github.com/ArtemShalinFe/gophkeeper/internal/server
+
+# SERVER
+.PHONY: run-gserver
+run-gserver: build-gserver
+	./cmd/gserver/gserver
+
+# CLIENT
+.PHONY: run-gclient
+run-gclient: build-gclient
+	./cmd/gclient/gclient
+	

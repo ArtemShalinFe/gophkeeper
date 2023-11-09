@@ -26,20 +26,7 @@ func (ui *TUI) displayUserLoginPage(ctx context.Context) {
 				ui.displayErr(err.Error())
 				return
 			}
-			ui.authUser = u
-
-			if err := ui.cache.AddUserRecordStorage(u.ID); err != nil {
-				ui.displayErr(err.Error())
-			}
-
-			ctxT, cancel := context.WithTimeout(ctx, time.Second*1)
-			defer cancel()
-
-			ui.Sync(ctxT)
-
-			ui.displayRecords(ctx, 0, ui.recLimit)
-
-			go ui.Sync(ctx)
+			ui.runSyncAndDisplayRecords(ctx, u)
 		}).
 		AddButton(buttonRegisterDesc, func() {
 			u, err := userDTO.AddUser(ctx, ui.gkclient)
@@ -47,20 +34,7 @@ func (ui *TUI) displayUserLoginPage(ctx context.Context) {
 				ui.displayErr(err.Error())
 				return
 			}
-			ui.authUser = u
-
-			if err := ui.cache.AddUserRecordStorage(u.ID); err != nil {
-				ui.displayErr(err.Error())
-			}
-
-			ctxT, cancel := context.WithTimeout(ctx, time.Second*1)
-			defer cancel()
-
-			ui.Sync(ctxT)
-
-			ui.displayRecords(ctx, 0, ui.recLimit)
-
-			go ui.Sync(ctx)
+			ui.runSyncAndDisplayRecords(ctx, u)
 		}).
 		AddButton(buttonQuinDesc, ui.displayQuitModal)
 
@@ -68,4 +42,21 @@ func (ui *TUI) displayUserLoginPage(ctx context.Context) {
 		SetTitleAlign(tview.AlignLeft)
 
 	ui.pages.AddPage(loginPage, form, true, true)
+}
+
+func (ui *TUI) runSyncAndDisplayRecords(ctx context.Context, u *models.User) {
+	ui.authUser = u
+
+	if err := ui.cache.AddUserRecordStorage(u.ID); err != nil {
+		ui.displayErr(err.Error())
+	}
+
+	ctxT, cancel := context.WithTimeout(ctx, time.Second*defaulTickSync)
+	defer cancel()
+
+	ui.Sync(ctxT)
+
+	ui.displayRecords(ctx, 0, ui.recLimit)
+
+	go func() { ui.Sync(ctx) }()
 }
