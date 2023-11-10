@@ -4,112 +4,165 @@ import "google/protobuf/timestamp.proto";
 
 package gophkeeper;
 
-option go_package = "github.com/ArtemShalinFe/gophkeeper/internal";
+option go_package = "github.com/ArtemShalinFe/gophkeeper/internal/server";
 
-message LastUpdateBorder {
-  google.protobuf.Timestamp timestamp = 1;
-}
-
+// Auth - encoded username and password. Identifies the Auth type.
 message Auth {
   string login = 1;
   string pwd = 2;
-  repeated MetaInfo meta = 3;
 }
 
+// Text - contains strings. Lots of lines.
 message Text {
   string data = 1;
-  repeated MetaInfo meta = 2;
 }
 
+// Binary - the file data.
 message Binary {
   bytes data = 1;
-  repeated MetaInfo meta = 2;
 }
 
+// Card - is the bank card details including: number, term and owner. cvv code is not stored.
 message Card {
   string number = 1;
   google.protobuf.Timestamp term = 2;
   string owner = 3;
-  repeated MetaInfo meta = 4;
 }
 
+enum DataType {
+  // For backward compatibility.
+  UNKNOWN = 0; 
+
+  // Encoded username and password. Identifies the Auth type.
+  AUTH = 1;
+
+  // Text. Identifies the Text type.
+  TEXT = 2;
+
+  // Binary file data. Identifies the Binary type.
+  BINARY = 3;
+
+  // Bank card details including number, term and owner. cvv code is not stored.
+  CARD = 4;
+}
+
+// Record - The message contains consolidated information about the user's data record in the database on the server.
 message Record {
-  string id = 1; 
+  // id - uuid record in database storage.
+  string id = 1;
+
+  // owner - id of the user owner of the file in the database.
+  string owner = 2;
+
+  // description - contains various kinds of descriptive information depending on the file type. 
+  //   - If the file is stored in a record, the field contains the name of the file;
+  //   - In all other cases, the user is free to specify the description himself.
+  string description = 3;
+
+  // type - allows you to determine the type of stored content in the file.
+  DataType type = 4;
+
+  // hashsum - the hash sum of the data that is stored in the repository.
+  string hashsum = 5;
+
+  // created - indicates the date of creation of the record in the repository.
+  google.protobuf.Timestamp created = 6;
+
+  // modified - indicates the date when the record in the repository was changed.
+  google.protobuf.Timestamp modified = 7;
+
+  // deleted - this flag indicates that the file has been deleted.
+  bool deleted = 8;
+
+  // data - the field contains the data directly related to the record. 
+  // There can be four types in the current implementation:
+  //   - Auth - Encoded username and password. Identifies the Auth type.
+  //   - Text -  Identifies the Text type.
+  //   - Binary - file data. Identifies the Binary type.
+  //   - Card - Bank card details including number, term and owner. cvv code is not stored.
   oneof data {
-    Auth auth = 2;
-    Text text = 3;
-    Binary binary = 4;
-    Card card = 5;
+    Auth auth = 9;
+    Text text = 10;
+    Binary binary = 11;
+    Card card = 12;
   }
+
+  // Metadata - for storing arbitrary textual meta-information
+  // (data belonging to a website, an individual or a bank, lists of one-time activation codes, etc.).
+  repeated Metadata metadata = 13;
+
+  // Version - file version.
+  int64 version = 14;
 }
 
+// AddRecordRequest - used to add a record.
+// The user ID is passed in the request headers.
 message AddRecordRequest {
+  // record - is a record that will be added.
   Record record = 1;
 }
-  
+
+// AddRecordResponse - returns the record ID, or an error if something went wrong.
 message AddRecordResponse {
   string id = 1; 
-  LastUpdateBorder border = 2;
-  string error = 3;
 }
 
+// AddUpdateRecordRequest - used to update a record.
+// The user ID is passed in the request headers.
 message UpdateRecordRequest {
+  // record - is a record that will be updated.
   Record record = 1;
 }
-    
+
+// AddUpdateRecordResponse - returns the record ID, or an error if something went wrong.
 message UpdateRecordResponse {
   string id = 1; 
-  LastUpdateBorder border = 2;
-  string error = 3;
 }
 
+// GetRecordRequest - used to retrieving record.
+// The user ID is passed in the request headers.
 message GetRecordRequest {
-  string id = 1; 
-  Record record = 2;
+  string id = 1;
 }
     
+// AddUpdateRecordResponse - returns the record, or an error if something went wrong.
 message GetRecordResponse {
-  string id = 1;
-  Record record = 2;
-  LastUpdateBorder border = 3;
-  string error = 4;
-}
-
-message DeleteRecordRequest { 
   Record record = 1;
 }
-      
-message DeleteRecordResponse {
+
+// ListRecordRequest - used to retrieving user records.
+// The user ID is passed in the request headers.
+message ListRecordRequest {
+  int32 offset = 1;
+  int32 limit = 2;
+}
+
+// ListRecordResponse - returns the records, or an error if something went wrong.
+message ListRecordResponse {
+  repeated Record records = 1;
+}
+
+// DeleteRecordRequest - returns the record id, or an error if something went wrong.
+// The user ID is passed in the request headers.
+message DeleteRecordRequest { 
   string id = 1;
-  LastUpdateBorder border = 2;
-  string error = 3;
+}
+
+// DeleteRecordResponse - returns an error if something went wrong.
+message DeleteRecordResponse {
 }
   
   // The key is a value for arbitrary textual meta-information 
   // (whether the data belongs to a website, an individual or a bank, lists of one-time activation codes, etc.)
-message MetaInfo {
-  string id = 1;
-  string key = 2;
-  string value = 3;
-}
-
-message SyncRequest {
-  LastUpdateBorder border = 1;
-}
-
-message SyncResponse {
-  repeated Record record = 1;
-  LastUpdateBorder border = 2;
-  string error = 3;
+message Metadata {
+  string key = 1;
+  string value = 2;
 }
 
 service Records {
-  rpc Add(stream AddRecordRequest) returns (AddRecordResponse);
-  rpc Update(stream UpdateRecordRequest) returns (UpdateRecordResponse);
-  rpc Get(GetRecordRequest) returns (stream GetRecordResponse); 
-  rpc Delete(DeleteRecordRequest) returns (DeleteRecordResponse);
-}
-
-service Sync {
-  rpc Sync(SyncRequest) returns (SyncResponse);
+  rpc GetRecord(GetRecordRequest) returns (GetRecordResponse) {}
+  rpc AddRecord(AddRecordRequest) returns (AddRecordResponse) {}
+  rpc UpdateRecord(UpdateRecordRequest) returns (UpdateRecordResponse) {}
+  rpc ListRecords(ListRecordRequest) returns (ListRecordResponse) {}
+  rpc DeleteRecord(DeleteRecordRequest) returns (DeleteRecordResponse){}
 }

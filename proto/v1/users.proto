@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package gophkeeper;
 
-option go_package = "github.com/ArtemShalinFe/gophkeeper/internal";
+option go_package = "github.com/ArtemShalinFe/gophkeeper/internal/server";
 
 message User {
   string id = 1;
@@ -10,24 +10,20 @@ message User {
 
 message RegisterRequest {
   string login = 1;
-  string pwd = 2;
+  string password = 2;
 }
 
 message RegisterResponse {
   User user = 1;
-  string jwt = 2;
-  string error = 3;
 }
 
 message LoginRequest {
   string login = 1;
-  string pwd = 2;
+  string password = 2;
 }
 
 message LoginResponse {
   User user = 1;
-  string jwt = 2;
-  string error = 3;
 }
 
 service Users {
